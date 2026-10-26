@@ -1,5 +1,4 @@
 using UnityEngine;
-
 [System.Serializable]
 
 public struct Triangle
@@ -42,8 +41,8 @@ public class RTCore_mesh : MonoBehaviour
 
     public string objectName;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    // Awake runs before any Start, so geometry is ready when other scripts query it in their Start
+    void Awake()
     {
         meshData.meshFilter = GetComponent<MeshFilter>();
 
@@ -57,24 +56,10 @@ public class RTCore_mesh : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Print the vertices and triangles of the mesh as a single string every 10 seconds
-        if (Time.time % 10 < Time.deltaTime)
-        {
-            string meshInfo = "Object ID: " + objectID + ", Name: " + objectName + "\nVertices\n: ";
-
-            foreach (Triangle tri in rtMesh.triangles)
-            {
-                meshInfo += "V0: ";
-                meshInfo += tri.V0.ToString() + " E1-E2: ";
-                meshInfo += tri.E1.ToString() + ", ";
-                meshInfo += tri.E2.ToString() + "\n";
-            }
-
-            Debug.Log(meshInfo);
-        }
+        
     }
 
-    RTMesh Convert_mesh(Mesh original)
+    private RTMesh Convert_mesh(Mesh original)
     {
         int triangle_count = original.triangles.Length / 3;
 
@@ -89,5 +74,23 @@ public class RTCore_mesh : MonoBehaviour
         }
     
         return rTMesh;
+    }
+
+    public string Serve_Geometry()
+    {
+        string meshInfo = "Object ID: " + objectID + ", Name: " + objectName + "\n";
+
+        meshInfo += "Em" + materialData.emissionColor.ToString();
+        meshInfo += "\nAb" + materialData.diffuseColor.ToString();
+        meshInfo += "\nTriangles:\n";
+        foreach (Triangle tri in rtMesh.triangles)
+        {
+            meshInfo += "V0: ";
+            meshInfo += tri.V0.ToString() + " E1-E2: ";
+            meshInfo += tri.E1.ToString() + ", ";
+            meshInfo += tri.E2.ToString() + "\n";
+        }
+
+        return meshInfo;
     }
 }
