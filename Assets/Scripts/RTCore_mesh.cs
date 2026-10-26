@@ -18,8 +18,12 @@ public struct Mesh
 
 public struct RTMesh
 {
+    // TODO: Triangle could be 3 indices to arrays of V0[] + E[]
     public Triangle[] triangles;
+
+    public int tri_count;
 }
+
 
 [System.Serializable]
 public struct Mat
@@ -35,7 +39,7 @@ public class RTCore_mesh : MonoBehaviour
 
     public RTMesh rtMesh;
 
-    public int myfav;
+    public Transform obj_transform;
 
     public int objectID;
 
@@ -45,50 +49,52 @@ public class RTCore_mesh : MonoBehaviour
     void Awake()
     {
         meshData.meshFilter = GetComponent<MeshFilter>();
+        obj_transform = GetComponent<Transform>();
 
         // Load the vertices of the mesh 
         meshData.vertices = meshData.meshFilter.mesh.vertices;
         meshData.triangles = meshData.meshFilter.mesh.triangles;
-
-        rtMesh = Convert_mesh(meshData);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        obj_transform.TransformPoints(meshData.meshFilter.mesh.vertices, meshData.vertices);
+        rtMesh = Convert_mesh(meshData);
     }
 
     private RTMesh Convert_mesh(Mesh original)
     {
         int triangle_count = original.triangles.Length / 3;
 
-        RTMesh rTMesh;
-        rTMesh.triangles = new Triangle[triangle_count];
+        RTMesh newRTMesh;
+        newRTMesh.tri_count = triangle_count;
+        newRTMesh.triangles = new Triangle[triangle_count];
 
         for(int tri_idx = 0; tri_idx < triangle_count ;tri_idx += 1)
         {
-            rTMesh.triangles[tri_idx].V0 = original.vertices[original.triangles[3*tri_idx]];
-            rTMesh.triangles[tri_idx].E1 = original.vertices[original.triangles[3*tri_idx+1]] - rTMesh.triangles[tri_idx].V0;
-            rTMesh.triangles[tri_idx].E2 = original.vertices[original.triangles[3*tri_idx+2]] - rTMesh.triangles[tri_idx].V0;
+            newRTMesh.triangles[tri_idx].V0 = original.vertices[original.triangles[3*tri_idx]];
+            newRTMesh.triangles[tri_idx].E1 = original.vertices[original.triangles[3*tri_idx+1]] - newRTMesh.triangles[tri_idx].V0;
+            newRTMesh.triangles[tri_idx].E2 = original.vertices[original.triangles[3*tri_idx+2]] - newRTMesh.triangles[tri_idx].V0;
         }
     
-        return rTMesh;
+        return newRTMesh;
     }
 
     public string Serve_Geometry()
     {
+        // TODO does not need to be human readible for the real application
         string meshInfo = "Object ID: " + objectID + ", Name: " + objectName + "\n";
+        meshInfo += "N: " + rtMesh.tri_count;
 
-        meshInfo += "Em" + materialData.emissionColor.ToString();
+        meshInfo += "\nEm" + materialData.emissionColor.ToString();
         meshInfo += "\nAb" + materialData.diffuseColor.ToString();
-        meshInfo += "\nTriangles:\n";
+        meshInfo += "\nTriangles:";
         foreach (Triangle tri in rtMesh.triangles)
         {
-            meshInfo += "V0: ";
-            meshInfo += tri.V0.ToString() + " E1-E2: ";
-            meshInfo += tri.E1.ToString() + ", ";
-            meshInfo += tri.E2.ToString() + "\n";
+            meshInfo += tri.V0.ToString() + ":";
+            meshInfo += tri.E1.ToString() + ":";
+            meshInfo += tri.E2.ToString() + ";";
         }
 
         return meshInfo;

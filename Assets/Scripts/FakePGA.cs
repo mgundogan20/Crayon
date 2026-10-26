@@ -17,8 +17,10 @@ public class FakePGA : MonoBehaviour
 
     // Primary ray settings
     public float fov = 0.01f;
-    public int X_res = 256;
-    public int Y_res = 128;
+    public int X_res = 64;
+    public int Y_res = 64;
+
+    public GameObject rtCam;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -27,14 +29,8 @@ public class FakePGA : MonoBehaviour
         RTCore_mesh[] foundScripts = Object.FindObjectsByType<RTCore_mesh>(FindObjectsSortMode.None);
         loadedMeshes.AddRange(foundScripts);
 
-        // Optional: Loop through them to do something immediately
-        foreach (RTCore_mesh mesh in loadedMeshes)
-        {
-            Debug.Log(mesh.Serve_Geometry());
-        }
-
         // Hookup the camera with the tag "RTcam" to GeneratePrimaries
-        GameObject rtCam = GameObject.FindWithTag("RTcam");
+        rtCam = GameObject.FindWithTag("RTcam");
         if (rtCam == null)
         {
             Debug.LogError("FakePGA: no GameObject tagged RTcam found");
@@ -42,14 +38,104 @@ public class FakePGA : MonoBehaviour
         }
 
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
-        RenderDebugFrame(rays);
+        // Bounce(rays);
+
+        // RenderFrame(rays);
         DrawDebugRays(rays);
+
+        InvokeRepeating("Frame", 0.1f, 10f); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+
+    }
+
+    void Frame(){
+        Debug.Log("Starting frame");
+        RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
+        Bounce(rays);
+
+        RenderFrame(rays);
+    }
+
+    void Bounce(RTRay[,] rays)
+    {
+        // The following is a very silly way of doing things
+        for (int x = 0; x < rays.GetLength(0); x++)
+        {
+            for (int y = 0; y < rays.GetLength(1); y++)
+            {
+                ref RTRay ray = ref rays[x, y];
+                foreach (RTCore_mesh mesh in loadedMeshes)
+                {
+                    string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
+
+                    string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach(string tri in triangles)
+                    {
+                        string[] coords = tri.Split(":");
+                        // Debug.Log(tri);
+                        Vector3 V0 = ParseVector(coords[0]);
+                        Vector3 E1 = ParseVector(coords[1]);
+                        Vector3 E2 = ParseVector(coords[2]);
+
+                        if(CheckIntersection(V0, E1, E2, ray)){
+                            ray.accum_col = ray.ray_col;    
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+
+    public Vector3 ParseVector(string input)
+    {
+        string[] components = input.Trim('(', ')', '[', ']').Replace(" ", "").Split(',');
+
+        float x = float.Parse(components[0]);
+        float y = float.Parse(components[1]);
+        float z = float.Parse(components[2]);
+
+        return new Vector3(x, y, z);
+    }
+
+    bool CheckIntersection(Vector3 V0, Vector3 E1, Vector3 E2, RTRay ray)
+    {
+        const float EPSILON = 1e-7f;
+
+        // Begin calculating determinant; also used for u
+        Vector3 P = Vector3.Cross(ray.direction, E2);
+        float det = Vector3.Dot(E1, P);
+
+        // Ray is parallel to the triangle plane
+        if (det > -EPSILON && det < EPSILON)
+            return false;
+
+        float invDet = 1.0f / det;
+
+        // Distance from V0 to ray origin
+        Vector3 T = ray.origin - V0;
+
+        // First barycentric coordinate
+        float u = Vector3.Dot(T, P) * invDet;
+        if (u < 0.0f || u > 1.0f)
+            return false;
+
+        // Second barycentric coordinate
+        Vector3 Q = Vector3.Cross(T, E1);
+        float v = Vector3.Dot(ray.direction, Q) * invDet;
+        if (v < 0.0f || u + v > 1.0f)
+            return false;
+
+        // Distance along the ray to the hit point
+        float t = Vector3.Dot(E2, Q) * invDet;
+
+        // Only count hits in front of the origin
+        return t > EPSILON;
     }
 
     private RTRay[,] GeneratePrimaries(GameObject camera, float fov, int X_res, int Y_res)
@@ -99,7 +185,7 @@ public class FakePGA : MonoBehaviour
             for (int y = 0; y < h; y++)
             {
                 Vector3 c = rays[x, y].accum_col;
-                px[y * w + x] = new Color(c.x, c.y, c.z, 1);
+                px[y * w + x] = new Color(c.x, c.y, c.z, 0.3f);
             }
         }
         debugTex.SetPixels(px);
