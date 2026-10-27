@@ -84,19 +84,22 @@ public class RTCore_mesh : MonoBehaviour
     public string Serve_Geometry()
     {
         // TODO does not need to be human readible for the real application
-        string meshInfo = "Object ID: " + objectID + ", Name: " + objectName + "\n";
-        meshInfo += "N: " + rtMesh.tri_count;
+        var sb = new System.Text.StringBuilder();
+        sb.Append("Object ID: ").Append(objectID);
+        sb.Append(", Name: ").Append(objectName).Append('\n');
 
-        meshInfo += "\nEm" + materialData.emissionColor.ToString();
-        meshInfo += "\nAb" + materialData.diffuseColor.ToString();
-        meshInfo += "\nTriangles:";
-        foreach (Triangle tri in rtMesh.triangles)
-        {
-            meshInfo += tri.V0.ToString() + ":";
-            meshInfo += tri.E1.ToString() + ":";
-            meshInfo += tri.E2.ToString() + ";";
+        sb.Append("N: ").Append(rtMesh.tri_count);
+
+        sb.Append("\nEm").Append(materialData.emissionColor.ToString());
+        sb.Append("\nAb").Append(materialData.diffuseColor.ToString());
+        
+        sb.Append("\nTriangles:");
+        foreach (Triangle tri in rtMesh.triangles){
+            sb.Append(tri.V0.ToString("R")).Append(':');
+            sb.Append(tri.E1.ToString("R")).Append(':');
+            sb.Append(tri.E2.ToString("R")).Append(';');
         }
-
-        return meshInfo;
+        
+        return sb.ToString();
     }
 }

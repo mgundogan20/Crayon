@@ -43,7 +43,7 @@ public class FakePGA : MonoBehaviour
         // RenderFrame(rays);
         DrawDebugRays(rays);
 
-        InvokeRepeating("Frame", 0.1f, 10f); 
+        InvokeRepeating("Frame", 0.02f, 0.05f); 
     }
 
     // Update is called once per frame
@@ -63,29 +63,26 @@ public class FakePGA : MonoBehaviour
     void Bounce(RTRay[,] rays)
     {
         // The following is a very silly way of doing things
-        for (int x = 0; x < rays.GetLength(0); x++)
-        {
-            for (int y = 0; y < rays.GetLength(1); y++)
-            {
-                ref RTRay ray = ref rays[x, y];
-                foreach (RTCore_mesh mesh in loadedMeshes)
-                {
-                    string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
+        foreach (RTCore_mesh mesh in loadedMeshes){
 
-                    string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
+            string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
 
-                    foreach(string tri in triangles)
-                    {
-                        string[] coords = tri.Split(":");
-                        // Debug.Log(tri);
-                        Vector3 V0 = ParseVector(coords[0]);
-                        Vector3 E1 = ParseVector(coords[1]);
-                        Vector3 E2 = ParseVector(coords[2]);
+            string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
 
+            foreach(string tri in triangles){
+                string[] coords = tri.Split(":");
+                // Debug.Log(tri);
+                Vector3 V0 = ParseVector(coords[0]);
+                Vector3 E1 = ParseVector(coords[1]);
+                Vector3 E2 = ParseVector(coords[2]);
+
+                for (int x = 0; x < rays.GetLength(0); x++){
+                    for (int y = 0; y < rays.GetLength(1); y++){
+
+                        ref RTRay ray = ref rays[x, y];
                         if(CheckIntersection(V0, E1, E2, ray)){
                             ray.accum_col = ray.ray_col;    
                         }
-
                     }
                 }
             }
