@@ -9,6 +9,24 @@ public struct RTRay
     public Vector3 accum_col;
 }
 
+public struct Hit
+{
+    public float distance;
+    public Vector3 position;
+    public Vector3 surface_normal;
+    public Vector3 diffuseColor;
+    public Vector3 emissionColor;
+}
+
+public struct Polygon
+{
+    public Vector3 V0;
+    public Vector3 E1;
+    public Vector3 E2; 
+    public Vector3 diffuseColor;
+    public Vector3 emissionColor;
+}
+
 public class FakePGA : MonoBehaviour
 {
 
@@ -21,6 +39,7 @@ public class FakePGA : MonoBehaviour
     public int Y_res = 64;
 
     public GameObject rtCam;
+    
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -41,20 +60,26 @@ public class FakePGA : MonoBehaviour
         // Bounce(rays);
 
         // RenderFrame(rays);
-        DrawDebugRays(rays);
 
-        InvokeRepeating("Frame", 0.02f, 0.05f); 
+        // InvokeRepeating("Frame", 0.02f, 100f); 
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        Frame();
     }
 
     void Frame(){
         Debug.Log("Starting frame");
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
+        DrawDebugRays(rays); //Primaries
+        Bounce(rays);
+
+        DrawDebugRays(rays); //Secondaries
+        Bounce(rays);
+        
+        DrawDebugRays(rays); //Secondaries
         Bounce(rays);
 
         RenderFrame(rays);
@@ -62,9 +87,13 @@ public class FakePGA : MonoBehaviour
 
     void Bounce(RTRay[,] rays)
     {
+        const float EPSILON = 1e-7f;
+        
         // The following is a very silly way of doing things
-        foreach (RTCore_mesh mesh in loadedMeshes){
+        
+        List<Polygon> tris = new List<Polygon>();
 
+        foreach (RTCore_mesh mesh in loadedMeshes){
             string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
 
             string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
@@ -72,21 +101,58 @@ public class FakePGA : MonoBehaviour
             foreach(string tri in triangles){
                 string[] coords = tri.Split(":");
                 // Debug.Log(tri);
-                Vector3 V0 = ParseVector(coords[0]);
-                Vector3 E1 = ParseVector(coords[1]);
-                Vector3 E2 = ParseVector(coords[2]);
+                // Vector3 V0 = ParseVector(coords[0]);
+                // Vector3 E1 = ParseVector(coords[1]);
+                // Vector3 E2 = ParseVector(coords[2]);
 
-                for (int x = 0; x < rays.GetLength(0); x++){
-                    for (int y = 0; y < rays.GetLength(1); y++){
+                tris.Add(new Polygon{
+                    V0 = ParseVector(coords[0]),
+                    E1 = ParseVector(coords[1]),
+                    E2 = ParseVector(coords[2]),
+                    diffuseColor = mesh.materialData.diffuseColor,
+                    emissionColor = mesh.materialData.emissionColor
+                });
+            }
+        }
 
-                        ref RTRay ray = ref rays[x, y];
-                        if(CheckIntersection(V0, E1, E2, ray)){
-                            ray.accum_col = ray.ray_col;    
+        
+        
+        for (int x = 0; x < rays.GetLength(0); x++){
+            for (int y = 0; y < rays.GetLength(1); y++){
+                Hit first_hit;
+                first_hit.surface_normal = new Vector3(0,0,0);
+                first_hit.emissionColor = new Vector3(0,0,0);
+                first_hit.diffuseColor = new Vector3(0,0,0);
+                first_hit.position = new Vector3(0,0,0);
+                first_hit.distance = 1e10f;
+
+                ref RTRay ray = ref rays[x, y];
+                foreach(Polygon t in tris){
+                    Hit hit = CheckIntersection(t.V0, t.E1, t.E2, ray);
+                    if(hit.distance > EPSILON){
+                        if(hit.distance < first_hit.distance){
+                            first_hit = hit;
+                            first_hit.diffuseColor = t.diffuseColor;
+                            first_hit.emissionColor = t.emissionColor;
                         }
                     }
                 }
+
+                if(first_hit.distance < 1e9f){
+                    ray.accum_col += Vector3.Scale(ray.ray_col, first_hit.emissionColor);
+                    ray.ray_col = Vector3.Scale(ray.ray_col, first_hit.diffuseColor);
+                    ray.origin = first_hit.position;
+                    ray.direction -= first_hit.surface_normal * 2 * Vector3.Dot(ray.direction, first_hit.surface_normal);
+                    ray.direction = PerturbDirection(ray.direction, 1.5f);
+                }
+                else{
+                    // Didn't hit, apply skylight
+                    ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.2f,0.2f,0.2f));
+                    ray.ray_col = new Vector3(0,0,0);
+                }
             }
         }
+
     }
 
     public Vector3 ParseVector(string input)
@@ -100,8 +166,15 @@ public class FakePGA : MonoBehaviour
         return new Vector3(x, y, z);
     }
 
-    bool CheckIntersection(Vector3 V0, Vector3 E1, Vector3 E2, RTRay ray)
+    Hit CheckIntersection(Vector3 V0, Vector3 E1, Vector3 E2, RTRay ray)
     {
+        Hit hit;
+        hit.distance = -1;
+        hit.position = new Vector3(0,0,0);
+        hit.surface_normal = new Vector3(0,0,0);
+        hit.diffuseColor = new Vector3(0,0,0);
+        hit.emissionColor = new Vector3(0,0,0);
+        
         const float EPSILON = 1e-7f;
 
         // Begin calculating determinant; also used for u
@@ -109,8 +182,9 @@ public class FakePGA : MonoBehaviour
         float det = Vector3.Dot(E1, P);
 
         // Ray is parallel to the triangle plane
-        if (det > -EPSILON && det < EPSILON)
-            return false;
+        if (det > -EPSILON && det < EPSILON){
+            return hit;
+        }
 
         float invDet = 1.0f / det;
 
@@ -119,21 +193,26 @@ public class FakePGA : MonoBehaviour
 
         // First barycentric coordinate
         float u = Vector3.Dot(T, P) * invDet;
-        if (u < 0.0f || u > 1.0f)
-            return false;
+        if (u < 0.0f || u > 1.0f){
+            return hit;
+        }
 
         // Second barycentric coordinate
         Vector3 Q = Vector3.Cross(T, E1);
         float v = Vector3.Dot(ray.direction, Q) * invDet;
-        if (v < 0.0f || u + v > 1.0f)
-            return false;
+        if (v < 0.0f || u + v > 1.0f){
+            return hit;
+        }
 
         // Distance along the ray to the hit point
-        float t = Vector3.Dot(E2, Q) * invDet;
-
-        // Only count hits in front of the origin
-        return t > EPSILON;
+        hit.distance = Vector3.Dot(E2, Q) * invDet;
+        hit.position = ray.origin + hit.distance*ray.direction;
+        hit.surface_normal = Vector3.Cross(E1, E2);
+        hit.surface_normal /= hit.surface_normal.magnitude;
+        return hit;
     }
+
+    //--------------------------------------------------------------
 
     private RTRay[,] GeneratePrimaries(GameObject camera, float fov, int X_res, int Y_res)
     {
@@ -153,7 +232,7 @@ public class FakePGA : MonoBehaviour
                 Vector3 direction = (deltax*right + deltay*up) + camera_direction;
             
                 rays[cur_x, cur_y].origin = camera_origin;
-                rays[cur_x, cur_y].direction = direction;
+                rays[cur_x, cur_y].direction = PerturbDirection(direction, 0.001f);
 
                 //TODO: all rays should start white + black
                 rays[cur_x, cur_y].ray_col = new Vector3(1, 1, 1);
@@ -166,6 +245,9 @@ public class FakePGA : MonoBehaviour
 
     // Debug: one pixel per ray drawn over the Game view
     Texture2D debugTex;
+    public int accumFrames = 1;
+    Color[] accum;      // running sum of the current batch
+    int accumCount = 0;
 
     void RenderFrame(RTRay[,] rays)
     {
@@ -174,19 +256,32 @@ public class FakePGA : MonoBehaviour
         {
             debugTex = new Texture2D(w, h, TextureFormat.RGBA32, false);
             debugTex.filterMode = FilterMode.Point;
+            accum = new Color[w * h];   // zero-filled by default
+            accumCount = 0;
         }
 
-        Color[] px = new Color[w * h];
+        Vector3 c;
         for (int x = 0; x < w; x++)
         {
             for (int y = 0; y < h; y++)
             {
-                Vector3 c = rays[x, y].accum_col;
-                px[y * w + x] = new Color(c.x, c.y, c.z, 0.3f);
+                c = rays[x, y].accum_col;
+                accum[y * w + x] += new Color(c.x, c.y, c.z, 1.0f);
             }
         }
-        debugTex.SetPixels(px);
+
+        if (++accumCount < accumFrames)
+            return;
+
+        // Batch complete: show the average, then start a new batch
+        float inv = 1.0f / accumCount;
+        for (int i = 0; i < accum.Length; i++)
+            accum[i] *= inv;
+        debugTex.SetPixels(accum);
         debugTex.Apply();
+
+        System.Array.Clear(accum, 0, accum.Length);
+        accumCount = 0;
     }
 
     void OnGUI()
@@ -196,7 +291,7 @@ public class FakePGA : MonoBehaviour
     }
 
     // Debug: draw every stride-th ray in the Scene view, colored by ray_col
-    void DrawDebugRays(RTRay[,] rays, int stride = 8, float length = 2.5f, float duration = 100f)
+    void DrawDebugRays(RTRay[,] rays, int stride = 40, float length = 0.25f, float duration = 10.0f)
     {
         for (int x = 0; x < rays.GetLength(0); x += stride)
         {
@@ -207,4 +302,28 @@ public class FakePGA : MonoBehaviour
             }
         }
     }
+
+    public static Vector3 PerturbDirection(Vector3 initial, float maxAngleRad)
+    {
+        // Get angle from z
+        float cosTheta = Random.Range(Mathf.Cos(maxAngleRad), 1f);
+        float sinTheta = Mathf.Sqrt(1f - cosTheta * cosTheta);
+
+        // Get angle from x
+        float phi = Random.Range(0f, 2*Mathf.PI);
+
+        // Convert to cartesian
+        Vector3 localDir = new Vector3(
+            sinTheta * Mathf.Cos(phi),
+            cosTheta,
+            sinTheta * Mathf.Sin(phi)
+        );
+
+        // Rotation maps z axis to initial direction
+        Quaternion rotationToNormal = Quaternion.FromToRotation(Vector3.up, initial);
+
+        // Rotate to align
+        return rotationToNormal * localDir;
+    }
+
 }

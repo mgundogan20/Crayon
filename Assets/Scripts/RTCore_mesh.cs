@@ -28,8 +28,8 @@ public struct RTMesh
 [System.Serializable]
 public struct Mat
 {
-    public Color diffuseColor;
-    public Color emissionColor;
+    public Vector3 diffuseColor;
+    public Vector3 emissionColor;
 }
 
 public class RTCore_mesh : MonoBehaviour
@@ -99,7 +99,7 @@ public class RTCore_mesh : MonoBehaviour
             sb.Append(tri.E1.ToString("R")).Append(':');
             sb.Append(tri.E2.ToString("R")).Append(';');
         }
-        
+
         return sb.ToString();
     }
 }
