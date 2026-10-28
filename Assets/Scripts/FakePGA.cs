@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using UnityEngine;
 
 public struct RTRay
@@ -39,13 +42,27 @@ public class FakePGA : MonoBehaviour
     public int Y_res = 64;
 
     public GameObject rtCam;
-    
+
+    [SerializeField, InspectorName("Use FPGA"), Tooltip("Use the optional fixed-point FPGA ray/triangle test instead of the CPU test.")]
+    public bool useFpga;
+    [SerializeField, Tooltip("Render using the deterministic Q16.16 CPU reference used for FPGA comparisons.")]
+    public bool useCpuGoldenReference;
+    [SerializeField, Tooltip("Run the CPU reference beside the FPGA and report any hit/index/distance mismatches.")]
+    public bool compareFpgaWithCpuReference;
+    [SerializeField] private string fpgaPortName = "COM3";
+    [SerializeField] private int fpgaBaudRate = 115200;
+    [SerializeField] private int fpgaTimeoutMilliseconds = 2000;
+
+    private FpgaRayTriangleApi fpgaApi;
+    private bool fpgaFailed;
+    public RayTraceHit[] LastBatchResults { get; private set; }
+    public RayTraceHit[] LastGoldenResults { get; private set; }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         // Find all active instances of RTCore_mesh and populate the list
-        RTCore_mesh[] foundScripts = Object.FindObjectsByType<RTCore_mesh>(FindObjectsSortMode.None);
+        RTCore_mesh[] foundScripts = UnityEngine.Object.FindObjectsByType<RTCore_mesh>(FindObjectsSortMode.None);
         loadedMeshes.AddRange(foundScripts);
 
         // Hookup the camera with the tag "RTcam" to GeneratePrimaries
@@ -55,6 +72,9 @@ public class FakePGA : MonoBehaviour
             Debug.LogError("FakePGA: no GameObject tagged RTcam found");
             return;
         }
+
+        if (useFpga)
+            ConnectFpga();
 
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
         // Bounce(rays);
@@ -71,6 +91,9 @@ public class FakePGA : MonoBehaviour
     }
 
     void Frame(){
+        if (rtCam == null)
+            return;
+
         Debug.Log("Starting frame");
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
         DrawDebugRays(rays); //Primaries
@@ -87,36 +110,126 @@ public class FakePGA : MonoBehaviour
 
     void Bounce(RTRay[,] rays)
     {
-        const float EPSILON = 1e-7f;
-        
-        // The following is a very silly way of doing things
-        
+        LastBatchResults = null;
+        LastGoldenResults = null;
         List<Polygon> tris = new List<Polygon>();
 
         foreach (RTCore_mesh mesh in loadedMeshes){
-            string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
-
-            string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
-
-            foreach(string tri in triangles){
-                string[] coords = tri.Split(":");
-                // Debug.Log(tri);
-                // Vector3 V0 = ParseVector(coords[0]);
-                // Vector3 E1 = ParseVector(coords[1]);
-                // Vector3 E2 = ParseVector(coords[2]);
-
+            foreach (Triangle tri in mesh.rtMesh.triangles){
                 tris.Add(new Polygon{
-                    V0 = ParseVector(coords[0]),
-                    E1 = ParseVector(coords[1]),
-                    E2 = ParseVector(coords[2]),
+                    V0 = tri.V0,
+                    E1 = tri.E1,
+                    E2 = tri.E2,
                     diffuseColor = mesh.materialData.diffuseColor,
                     emissionColor = mesh.materialData.emissionColor
                 });
             }
         }
 
-        
-        
+        if ((useFpga && fpgaApi != null && !fpgaFailed) || useCpuGoldenReference)
+        {
+            try
+            {
+                List<RayTraceTriangle> scene = new List<RayTraceTriangle>(tris.Count);
+                foreach (Polygon triangle in tris)
+                {
+                    scene.Add(new RayTraceTriangle
+                    {
+                        v0 = triangle.V0,
+                        e1 = triangle.E1,
+                        e2 = triangle.E2,
+                        diffuseColor = triangle.diffuseColor,
+                        emissionColor = triangle.emissionColor
+                    });
+                }
+
+                List<RayTraceRay> rayBatch = new List<RayTraceRay>(rays.Length);
+                for (int x = 0; x < rays.GetLength(0); x++)
+                {
+                    for (int y = 0; y < rays.GetLength(1); y++)
+                    {
+                        rayBatch.Add(new RayTraceRay
+                        {
+                            origin = rays[x, y].origin,
+                            direction = rays[x, y].direction
+                        });
+                    }
+                }
+
+                RayTraceHit[] results = new RayTraceHit[rayBatch.Count];
+                bool useHardware = useFpga && fpgaApi != null && !fpgaFailed;
+                bool computeGolden = useCpuGoldenReference || (useHardware && compareFpgaWithCpuReference);
+                RayTraceHit[] goldenResults = computeGolden
+                    ? new RayTraceHit[rayBatch.Count]
+                    : null;
+                if (useHardware)
+                {
+                    fpgaApi.UploadScene(scene);
+                }
+
+                for (int batchOffset = 0; batchOffset < rayBatch.Count; batchOffset += RayTraceBatch.MaxRays)
+                {
+                    int batchCount = Math.Min(RayTraceBatch.MaxRays, rayBatch.Count - batchOffset);
+                    List<RayTraceRay> batch = rayBatch.GetRange(batchOffset, batchCount);
+                    RayTraceHit[] batchResults = useHardware
+                        ? fpgaApi.TraceBatch(batch)
+                        : RayTraceBatch.TraceCpuReference(scene, batch);
+                    Array.Copy(batchResults, 0, results, batchOffset, batchCount);
+
+                    if (computeGolden)
+                    {
+                        RayTraceHit[] batchGolden = useHardware
+                            ? RayTraceBatch.TraceCpuReference(scene, batch)
+                            : batchResults;
+                        Array.Copy(batchGolden, 0, goldenResults, batchOffset, batchCount);
+                    }
+                }
+
+                LastBatchResults = results;
+                LastGoldenResults = goldenResults;
+                if (useHardware && compareFpgaWithCpuReference)
+                    ReportGoldenMismatches(results, goldenResults);
+
+                int resultIndex = 0;
+                for (int x = 0; x < rays.GetLength(0); x++)
+                {
+                    for (int y = 0; y < rays.GetLength(1); y++)
+                    {
+                        ref RTRay ray = ref rays[x, y];
+                        RayTraceHit result = results[resultIndex++];
+                        if (result.hit)
+                        {
+                            Polygon triangle = tris[result.triangleIndex];
+                            Vector3 normal = Vector3.Cross(triangle.E1, triangle.E2).normalized;
+                            Vector3 position = ray.origin + result.Distance * ray.direction;
+                            ray.accum_col += Vector3.Scale(ray.ray_col, triangle.emissionColor);
+                            ray.ray_col = Vector3.Scale(ray.ray_col, triangle.diffuseColor);
+                            ray.origin = position;
+                            ray.direction -= normal * 2 * Vector3.Dot(ray.direction, normal);
+                            ray.direction = PerturbDirection(ray.direction, 1.5f);
+                        }
+                        else
+                        {
+                            ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.2f, 0.2f, 0.2f));
+                            ray.ray_col = Vector3.zero;
+                        }
+                    }
+                }
+                return;
+            }
+            catch (Exception exception) when (
+                exception is IOException ||
+                exception is TimeoutException ||
+                exception is Win32Exception ||
+                exception is PlatformNotSupportedException ||
+                exception is ArgumentException ||
+                exception is InvalidOperationException)
+            {
+                DisableFpga(exception);
+            }
+        }
+
+        const float EPSILON = 1e-7f;
         for (int x = 0; x < rays.GetLength(0); x++){
             for (int y = 0; y < rays.GetLength(1); y++){
                 Hit first_hit;
@@ -155,6 +268,34 @@ public class FakePGA : MonoBehaviour
 
     }
 
+    private static void ReportGoldenMismatches(RayTraceHit[] hardware, RayTraceHit[] golden)
+    {
+        int mismatchCount = 0;
+        int firstMismatch = -1;
+        for (int i = 0; i < hardware.Length; i++)
+        {
+            if (hardware[i].hit != golden[i].hit ||
+                hardware[i].triangleIndex != golden[i].triangleIndex ||
+                hardware[i].distanceQ16 != golden[i].distanceQ16)
+            {
+                if (firstMismatch < 0)
+                    firstMismatch = i;
+                mismatchCount++;
+            }
+        }
+
+        if (mismatchCount > 0)
+        {
+            Debug.LogWarning(
+                "FakePGA: FPGA/CPU-reference mismatch in " + mismatchCount +
+                " ray(s); first batch ray " + firstMismatch +
+                " (FPGA hit/index/distance=" + hardware[firstMismatch].hit + "/" +
+                hardware[firstMismatch].triangleIndex + "/" + hardware[firstMismatch].distanceQ16 +
+                ", CPU=" + golden[firstMismatch].hit + "/" +
+                golden[firstMismatch].triangleIndex + "/" + golden[firstMismatch].distanceQ16 + ").");
+        }
+    }
+
     public Vector3 ParseVector(string input)
     {
         string[] components = input.Trim('(', ')', '[', ']').Replace(" ", "").Split(',');
@@ -174,7 +315,7 @@ public class FakePGA : MonoBehaviour
         hit.surface_normal = new Vector3(0,0,0);
         hit.diffuseColor = new Vector3(0,0,0);
         hit.emissionColor = new Vector3(0,0,0);
-        
+
         const float EPSILON = 1e-7f;
 
         // Begin calculating determinant; also used for u
@@ -210,6 +351,52 @@ public class FakePGA : MonoBehaviour
         hit.surface_normal = Vector3.Cross(E1, E2);
         hit.surface_normal /= hit.surface_normal.magnitude;
         return hit;
+    }
+
+    private void ConnectFpga()
+    {
+        try
+        {
+            fpgaApi = new FpgaRayTriangleApi(
+                fpgaPortName,
+                fpgaBaudRate,
+                fpgaTimeoutMilliseconds);
+            Debug.Log("FakePGA: FPGA UART connected on " + fpgaPortName + ".");
+            Debug.LogWarning(
+                "FakePGA: scene geometry is uploaded once and reused for ray batches. " +
+                "The UART path is still synchronous and may not outperform the CPU.");
+        }
+        catch (Exception exception) when (
+            exception is IOException ||
+            exception is TimeoutException ||
+            exception is Win32Exception ||
+            exception is PlatformNotSupportedException ||
+            exception is ArgumentException ||
+            exception is InvalidOperationException)
+        {
+            DisableFpga(exception);
+        }
+    }
+
+    private void DisableFpga(Exception exception)
+    {
+        fpgaFailed = true;
+        if (fpgaApi != null)
+        {
+            fpgaApi.Dispose();
+            fpgaApi = null;
+        }
+
+        Debug.LogError("FakePGA: FPGA request failed; using the CPU ray/triangle test. " + exception.Message);
+    }
+
+    private void OnDestroy()
+    {
+        if (fpgaApi != null)
+        {
+            fpgaApi.Dispose();
+            fpgaApi = null;
+        }
     }
 
     //--------------------------------------------------------------
@@ -288,6 +475,26 @@ public class FakePGA : MonoBehaviour
     {
         if (debugTex != null)
             GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), debugTex, ScaleMode.ScaleToFit);
+
+        bool fpgaRequested = GUI.Toggle(new Rect(8, 8, 180, 24), useFpga, "Use FPGA (UART)");
+        if (fpgaRequested != useFpga)
+            SetFpgaEnabled(fpgaRequested);
+    }
+
+    private void SetFpgaEnabled(bool enabled)
+    {
+        useFpga = enabled;
+        fpgaFailed = false;
+
+        if (enabled)
+        {
+            ConnectFpga();
+        }
+        else if (fpgaApi != null)
+        {
+            fpgaApi.Dispose();
+            fpgaApi = null;
+        }
     }
 
     // Debug: draw every stride-th ray in the Scene view, colored by ray_col
@@ -306,11 +513,11 @@ public class FakePGA : MonoBehaviour
     public static Vector3 PerturbDirection(Vector3 initial, float maxAngleRad)
     {
         // Get angle from z
-        float cosTheta = Random.Range(Mathf.Cos(maxAngleRad), 1f);
+        float cosTheta = UnityEngine.Random.Range(Mathf.Cos(maxAngleRad), 1f);
         float sinTheta = Mathf.Sqrt(1f - cosTheta * cosTheta);
 
         // Get angle from x
-        float phi = Random.Range(0f, 2*Mathf.PI);
+        float phi = UnityEngine.Random.Range(0f, 2*Mathf.PI);
 
         // Convert to cartesian
         Vector3 localDir = new Vector3(
