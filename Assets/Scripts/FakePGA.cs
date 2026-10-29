@@ -56,30 +56,36 @@ public class FakePGA : MonoBehaviour
             return;
         }
 
-        RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
+        // RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
         // Bounce(rays);
 
         // RenderFrame(rays);
 
-        // InvokeRepeating("Frame", 0.02f, 100f); 
+        InvokeRepeating("Frame", 0.02f, 0.5f); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        Frame();
+        // Frame();
     }
 
     void Frame(){
         Debug.Log("Starting frame");
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
-        DrawDebugRays(rays); //Primaries
+        // DrawDebugRays(rays); //Primaries
         Bounce(rays);
 
-        DrawDebugRays(rays); //Secondaries
+        // DrawDebugRays(rays); //Secondaries
         Bounce(rays);
         
-        DrawDebugRays(rays); //Secondaries
+        // DrawDebugRays(rays); //Secondaries
+        Bounce(rays);
+        
+        // DrawDebugRays(rays); //Secondaries
+        Bounce(rays);
+        
+        // DrawDebugRays(rays); //Secondaries
         Bounce(rays);
 
         RenderFrame(rays);
@@ -143,11 +149,11 @@ public class FakePGA : MonoBehaviour
                     ray.ray_col = Vector3.Scale(ray.ray_col, first_hit.diffuseColor);
                     ray.origin = first_hit.position;
                     ray.direction -= first_hit.surface_normal * 2 * Vector3.Dot(ray.direction, first_hit.surface_normal);
-                    ray.direction = PerturbDirection(ray.direction, 1.5f);
+                    ray.direction = PerturbDirection(ray.direction, 0.1f);
                 }
                 else{
                     // Didn't hit, apply skylight
-                    ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.2f,0.2f,0.2f));
+                    ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.8f,0.8f,0.8f));
                     ray.ray_col = new Vector3(0,0,0);
                 }
             }
@@ -230,9 +236,10 @@ public class FakePGA : MonoBehaviour
                 float deltax = (cur_x-X_res/2)*fov;
                 float deltay = (cur_y-Y_res/2)*fov;
                 Vector3 direction = (deltax*right + deltay*up) + camera_direction;
+                direction /= direction.magnitude;
             
                 rays[cur_x, cur_y].origin = camera_origin;
-                rays[cur_x, cur_y].direction = PerturbDirection(direction, 0.001f);
+                rays[cur_x, cur_y].direction = PerturbDirection(direction, 0.002f);
 
                 //TODO: all rays should start white + black
                 rays[cur_x, cur_y].ray_col = new Vector3(1, 1, 1);
@@ -245,7 +252,7 @@ public class FakePGA : MonoBehaviour
 
     // Debug: one pixel per ray drawn over the Game view
     Texture2D debugTex;
-    public int accumFrames = 1;
+    public int accumFrames = 5;
     Color[] accum;      // running sum of the current batch
     int accumCount = 0;
 
