@@ -1,0 +1,2 @@
+multiply.v,verilog,xil_defaultlib,../../../../CRAYON.gen/sources_1/ip/multiply/sim/multiply.v,
+glbl.v,Verilog,xil_defaultlib,glbl.v

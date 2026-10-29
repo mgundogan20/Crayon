@@ -22,7 +22,7 @@ public struct Polygon
 {
     public Vector3 V0;
     public Vector3 E1;
-    public Vector3 E2; 
+    public Vector3 E2;
     public Vector3 diffuseColor;
     public Vector3 emissionColor;
 }
@@ -39,8 +39,23 @@ public class FakePGA : MonoBehaviour
     public int Y_res = 64;
 
     public GameObject rtCam;
-    
+    public GameObject fpga_comm;
 
+    // FPGA settings
+    [Header("FPGA")]
+    public bool useFpga = false;            // trace on the Nexys A7 instead of the CPU
+    public bool fpgaGeneratesRays = true;   // send only the camera; primaries are generated on the FPGA (any resolution)
+    public bool fpgaJitter = true;          // primary-ray jitter (PerturbDirection 0.001f) on the FPGA
+    public int verifyBatches = 1;           // camera mode: batches of 4096 rays checked against FpgaReference
+    public int bounces = 3;                 // same as the three Bounce() calls in the CPU path
+    public bool fpgaPerturb = true;         // hardware PerturbDirection after each bounce
+    public uint fpgaSeed = 12345;           // RNG seed (incremented every frame)
+    public bool verifyFpga = true;          // compare the FPGA result bit-for-bit with FpgaReference
+    private uint frameCounter = 0;
+
+    [Header("Display")]
+    public float exposure = 1.0f;   // overall brightness before tone mapping
+    public bool toneMap = true;     // compress values > 1 without changing the hue
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -61,51 +76,38 @@ public class FakePGA : MonoBehaviour
 
         // RenderFrame(rays);
 
-        // InvokeRepeating("Frame", 0.02f, 100f); 
+        InvokeRepeating("Frame", 0.02f, 3f); 
     }
 
     // Update is called once per frame
     void Update()
     {
-        Frame();
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            Frame();
+        }
     }
 
-    void Frame(){
-        Debug.Log("Starting frame");
-        RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
-        DrawDebugRays(rays); //Primaries
-        Bounce(rays);
-
-        DrawDebugRays(rays); //Secondaries
-        Bounce(rays);
-        
-        DrawDebugRays(rays); //Secondaries
-        Bounce(rays);
-
-        RenderFrame(rays);
-    }
-
-    void Bounce(RTRay[,] rays)
+    void Frame()
     {
-        const float EPSILON = 1e-7f;
-        
-        // The following is a very silly way of doing things
-        
         List<Polygon> tris = new List<Polygon>();
 
-        foreach (RTCore_mesh mesh in loadedMeshes){
+        foreach (RTCore_mesh mesh in loadedMeshes)
+        {
             string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
 
             string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
 
-            foreach(string tri in triangles){
+            foreach (string tri in triangles)
+            {
                 string[] coords = tri.Split(":");
                 // Debug.Log(tri);
                 // Vector3 V0 = ParseVector(coords[0]);
                 // Vector3 E1 = ParseVector(coords[1]);
                 // Vector3 E2 = ParseVector(coords[2]);
 
-                tris.Add(new Polygon{
+                tris.Add(new Polygon
+                {
                     V0 = ParseVector(coords[0]),
                     E1 = ParseVector(coords[1]),
                     E2 = ParseVector(coords[2]),
@@ -115,22 +117,204 @@ public class FakePGA : MonoBehaviour
             }
         }
 
-        
-        
-        for (int x = 0; x < rays.GetLength(0); x++){
-            for (int y = 0; y < rays.GetLength(1); y++){
+        print(tris.Count);
+        Debug.Log("Starting frame");
+        RTRay[,] rays;
+        if (useFpga && fpgaGeneratesRays)
+        {
+            rays = new RTRay[X_res, Y_res];
+            TraceCameraOnFpga(tris, rays);
+        }
+        else
+        {
+            rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
+            if (useFpga)
+            {
+                TraceOnFpga(tris, rays);
+            }
+            else
+            {
+                //DrawDebugRays(rays); //Primaries
+                for (int b = 0; b < bounces; b++)
+                    Bounce(rays);
+            }
+        }
+
+        RenderFrame(rays);
+    }
+
+    // ---------------------------------------------------------------- FPGA path, rays generated on the FPGA
+    // Same camera vectors / fov / pixel order as GeneratePrimaries(); only the jitter uses the
+    // hardware PerturbDirection. Any resolution: the FPGA works in batches of 4096 rays.
+    void TraceCameraOnFpga(List<Polygon> tris, RTRay[,] rays)
+    {
+        FpgaReference.CameraSetup cam = new FpgaReference.CameraSetup
+        {
+            position = rtCam.transform.position,
+            forward = rtCam.transform.forward,
+            right = rtCam.transform.right,
+            up = rtCam.transform.up,
+            fov = fov,
+            xRes = X_res,
+            yRes = Y_res
+        };
+        int total = X_res * Y_res;
+        uint seed = fpgaSeed + frameCounter++;
+        FpgaPolygonSender link = fpga_comm.GetComponent<FpgaPolygonSender>();
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Vector3[] accum;
+        try
+        {
+            link.Connect();
+            link.SendPolygons(tris);
+            link.SendCamera(cam, bounces, fpgaPerturb, fpgaJitter, seed);   // starts the frame
+            accum = link.ReceiveFrame(total);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("FPGA frame failed: " + e.Message);
+            link.Disconnect();
+            return;
+        }
+        Debug.Log($"FPGA frame: {X_res}x{Y_res} rays x {tris.Count} tris x {bounces} bounces in {sw.ElapsedMilliseconds} ms (incl. UART)");
+
+        if (verifyFpga && verifyBatches > 0)
+        {
+            Vector3[] reference = FpgaReference.TraceCameraFrame(tris, cam, bounces, fpgaPerturb, fpgaJitter, seed,
+                                                                 FpgaPolygonSender.MaxRays, verifyBatches);
+            int check = System.Math.Min(total, verifyBatches * FpgaPolygonSender.MaxRays), bad = 0;
+            for (int i = 0; i < check; i++)
+            {
+                Vector3 a = accum[i], r = reference[i];
+                if (FpgaReference.Bits(a.x) != FpgaReference.Bits(r.x) ||
+                    FpgaReference.Bits(a.y) != FpgaReference.Bits(r.y) ||
+                    FpgaReference.Bits(a.z) != FpgaReference.Bits(r.z))
+                {
+                    if (bad < 5)
+                        Debug.LogWarning($"pixel {i}: FPGA {a.ToString("R")} != reference {r.ToString("R")}");
+                    bad++;
+                }
+            }
+            if (bad == 0) Debug.Log($"FPGA result is bit-exact with FpgaReference ({check} rays checked).");
+            else Debug.LogError($"FPGA result differs from FpgaReference on {bad}/{check} rays.");
+        }
+
+        for (int x = 0; x < X_res; x++)
+            for (int y = 0; y < Y_res; y++)
+                rays[x, y].accum_col = accum[x * Y_res + y];
+    }
+
+    // ---------------------------------------------------------------- FPGA path, rays sent from the PC (<= 4096)
+    // Rays are numbered x-major (index = x * Y_res + y), the order they are sent in.
+    void TraceOnFpga(List<Polygon> tris, RTRay[,] rays)
+    {
+        int w = rays.GetLength(0), h = rays.GetLength(1);
+        RTRay[] flat = new RTRay[w * h];
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++)
+                flat[x * h + y] = rays[x, y];
+
+        uint seed = fpgaSeed + frameCounter++;
+        FpgaPolygonSender link = fpga_comm.GetComponent<FpgaPolygonSender>();
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        Vector3[] accum;
+        try
+        {
+            link.Connect();
+            link.SendPolygons(tris);
+            link.SendRays(flat, bounces, fpgaPerturb, seed);   // starts the frame
+            accum = link.ReceiveResults(flat.Length);
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError("FPGA frame failed: " + e.Message);
+            link.Disconnect();
+            return;
+        }
+        Debug.Log($"FPGA frame: {flat.Length} rays x {tris.Count} tris x {bounces} bounces in {sw.ElapsedMilliseconds} ms (incl. UART)");
+
+        if (verifyFpga)
+        {
+            RTRay[] reference = (RTRay[])flat.Clone();
+            FpgaReference.TraceFrame(tris, reference, bounces, fpgaPerturb, seed);
+            int bad = 0;
+            for (int i = 0; i < flat.Length; i++)
+            {
+                Vector3 a = accum[i], r = reference[i].accum_col;
+                if (FpgaReference.Bits(a.x) != FpgaReference.Bits(r.x) ||
+                    FpgaReference.Bits(a.y) != FpgaReference.Bits(r.y) ||
+                    FpgaReference.Bits(a.z) != FpgaReference.Bits(r.z))
+                {
+                    if (bad < 5)
+                        Debug.LogWarning($"ray {i}: FPGA {a.ToString("R")} != reference {r.ToString("R")}");
+                    bad++;
+                }
+            }
+            if (bad == 0) Debug.Log("FPGA result is bit-exact with FpgaReference.");
+            else Debug.LogError($"FPGA result differs from FpgaReference on {bad}/{flat.Length} rays.");
+        }
+
+        for (int x = 0; x < w; x++)
+            for (int y = 0; y < h; y++)
+                rays[x, y].accum_col = accum[x * h + y];
+    }
+
+    void Bounce(RTRay[,] rays)
+    {
+        const float EPSILON = 1e-7f;
+
+        // The following is a very silly way of doing things
+
+        List<Polygon> tris = new List<Polygon>();
+
+        foreach (RTCore_mesh mesh in loadedMeshes)
+        {
+            string[] geometry = mesh.Serve_Geometry().Split("Triangles:");
+
+            string[] triangles = geometry[1].Split(";", System.StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (string tri in triangles)
+            {
+                string[] coords = tri.Split(":");
+                // Debug.Log(tri);
+                // Vector3 V0 = ParseVector(coords[0]);
+                // Vector3 E1 = ParseVector(coords[1]);
+                // Vector3 E2 = ParseVector(coords[2]);
+
+                tris.Add(new Polygon
+                {
+                    V0 = ParseVector(coords[0]),
+                    E1 = ParseVector(coords[1]),
+                    E2 = ParseVector(coords[2]),
+                    diffuseColor = mesh.materialData.diffuseColor,
+                    emissionColor = mesh.materialData.emissionColor
+                });
+            }
+        }
+
+
+
+        for (int x = 0; x < rays.GetLength(0); x++)
+        {
+            for (int y = 0; y < rays.GetLength(1); y++)
+            {
                 Hit first_hit;
-                first_hit.surface_normal = new Vector3(0,0,0);
-                first_hit.emissionColor = new Vector3(0,0,0);
-                first_hit.diffuseColor = new Vector3(0,0,0);
-                first_hit.position = new Vector3(0,0,0);
+                first_hit.surface_normal = new Vector3(0, 0, 0);
+                first_hit.emissionColor = new Vector3(0, 0, 0);
+                first_hit.diffuseColor = new Vector3(0, 0, 0);
+                first_hit.position = new Vector3(0, 0, 0);
                 first_hit.distance = 1e10f;
 
                 ref RTRay ray = ref rays[x, y];
-                foreach(Polygon t in tris){
+                foreach (Polygon t in tris)
+                {
                     Hit hit = CheckIntersection(t.V0, t.E1, t.E2, ray);
-                    if(hit.distance > EPSILON){
-                        if(hit.distance < first_hit.distance){
+                    if (hit.distance > EPSILON)
+                    {
+                        if (hit.distance < first_hit.distance)
+                        {
                             first_hit = hit;
                             first_hit.diffuseColor = t.diffuseColor;
                             first_hit.emissionColor = t.emissionColor;
@@ -138,17 +322,19 @@ public class FakePGA : MonoBehaviour
                     }
                 }
 
-                if(first_hit.distance < 1e9f){
+                if (first_hit.distance < 1e9f)
+                {
                     ray.accum_col += Vector3.Scale(ray.ray_col, first_hit.emissionColor);
                     ray.ray_col = Vector3.Scale(ray.ray_col, first_hit.diffuseColor);
                     ray.origin = first_hit.position;
                     ray.direction -= first_hit.surface_normal * 2 * Vector3.Dot(ray.direction, first_hit.surface_normal);
                     ray.direction = PerturbDirection(ray.direction, 1.5f);
                 }
-                else{
+                else
+                {
                     // Didn't hit, apply skylight
-                    ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.2f,0.2f,0.2f));
-                    ray.ray_col = new Vector3(0,0,0);
+                    ray.accum_col += Vector3.Scale(ray.ray_col, new Vector3(0.2f, 0.2f, 0.2f));
+                    ray.ray_col = new Vector3(0, 0, 0);
                 }
             }
         }
@@ -170,11 +356,11 @@ public class FakePGA : MonoBehaviour
     {
         Hit hit;
         hit.distance = -1;
-        hit.position = new Vector3(0,0,0);
-        hit.surface_normal = new Vector3(0,0,0);
-        hit.diffuseColor = new Vector3(0,0,0);
-        hit.emissionColor = new Vector3(0,0,0);
-        
+        hit.position = new Vector3(0, 0, 0);
+        hit.surface_normal = new Vector3(0, 0, 0);
+        hit.diffuseColor = new Vector3(0, 0, 0);
+        hit.emissionColor = new Vector3(0, 0, 0);
+
         const float EPSILON = 1e-7f;
 
         // Begin calculating determinant; also used for u
@@ -182,7 +368,8 @@ public class FakePGA : MonoBehaviour
         float det = Vector3.Dot(E1, P);
 
         // Ray is parallel to the triangle plane
-        if (det > -EPSILON && det < EPSILON){
+        if (det > -EPSILON && det < EPSILON)
+        {
             return hit;
         }
 
@@ -193,20 +380,22 @@ public class FakePGA : MonoBehaviour
 
         // First barycentric coordinate
         float u = Vector3.Dot(T, P) * invDet;
-        if (u < 0.0f || u > 1.0f){
+        if (u < 0.0f || u > 1.0f)
+        {
             return hit;
         }
 
         // Second barycentric coordinate
         Vector3 Q = Vector3.Cross(T, E1);
         float v = Vector3.Dot(ray.direction, Q) * invDet;
-        if (v < 0.0f || u + v > 1.0f){
+        if (v < 0.0f || u + v > 1.0f)
+        {
             return hit;
         }
 
         // Distance along the ray to the hit point
         hit.distance = Vector3.Dot(E2, Q) * invDet;
-        hit.position = ray.origin + hit.distance*ray.direction;
+        hit.position = ray.origin + hit.distance * ray.direction;
         hit.surface_normal = Vector3.Cross(E1, E2);
         hit.surface_normal /= hit.surface_normal.magnitude;
         return hit;
@@ -225,12 +414,14 @@ public class FakePGA : MonoBehaviour
         RTRay[,] rays = new RTRay[X_res, Y_res];
 
         // TODO: Should be done with matrices
-        for(int cur_x=0; cur_x<X_res; cur_x++){
-            for(int cur_y=0; cur_y<Y_res; cur_y++){
-                float deltax = (cur_x-X_res/2)*fov;
-                float deltay = (cur_y-Y_res/2)*fov;
-                Vector3 direction = (deltax*right + deltay*up) + camera_direction;
-            
+        for (int cur_x = 0; cur_x < X_res; cur_x++)
+        {
+            for (int cur_y = 0; cur_y < Y_res; cur_y++)
+            {
+                float deltax = (cur_x - X_res / 2) * fov;
+                float deltay = (cur_y - Y_res / 2) * fov;
+                Vector3 direction = (deltax * right + deltay * up) + camera_direction;
+
                 rays[cur_x, cur_y].origin = camera_origin;
                 rays[cur_x, cur_y].direction = PerturbDirection(direction, 0.001f);
 
@@ -276,7 +467,18 @@ public class FakePGA : MonoBehaviour
         // Batch complete: show the average, then start a new batch
         float inv = 1.0f / accumCount;
         for (int i = 0; i < accum.Length; i++)
-            accum[i] *= inv;
+        {
+            Color col = accum[i] * (inv * exposure);
+            if (toneMap)
+            {
+                float lum = 0.2126f * col.r + 0.7152f * col.g + 0.0722f * col.b;
+                col *= 1.0f / (1.0f + lum);                         // Reinhard on luminance: keeps hue
+                float m = Mathf.Max(col.r, Mathf.Max(col.g, col.b));
+                if (m > 1.0f) col *= 1.0f / m;                      // never clip a single channel
+            }
+            col.a = 1.0f;
+            accum[i] = col;
+        }
         debugTex.SetPixels(accum);
         debugTex.Apply();
 
@@ -310,7 +512,7 @@ public class FakePGA : MonoBehaviour
         float sinTheta = Mathf.Sqrt(1f - cosTheta * cosTheta);
 
         // Get angle from x
-        float phi = Random.Range(0f, 2*Mathf.PI);
+        float phi = Random.Range(0f, 2 * Mathf.PI);
 
         // Convert to cartesian
         Vector3 localDir = new Vector3(
