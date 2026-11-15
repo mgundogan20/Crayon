@@ -25,12 +25,20 @@ public class FakePGA : MonoBehaviour
     public List<Triangle> all_tri = new List<Triangle>();
 
     // Primary ray settings
-    public float fov = 0.01f;
-    public int X_res = 64;
-    public int Y_res = 64;
+    public float fov;
+    public int X_res;
+    public int Y_res;
 
     public GameObject rtCam;
+
+    // Wall-clock time of the last Frame() call, in milliseconds (read-only, shown in the Inspector)
+    public float lastFrameMs;
+    // Wall-clock time of the most recent GeneratePrimaries / BounceBVH call, in milliseconds
+    public float lastPrimariesMs;
+    public float lastBounceMs;
     public BVH bvh;
+
+    public int num_bounces;
     
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -50,6 +58,7 @@ public class FakePGA : MonoBehaviour
             Debug.LogError("FakePGA: no GameObject tagged RTcam found");
             return;
         }
+        fov = rtCam.GetComponent<Camera>().fieldOfView;
 
         // Populate triangle list
         foreach(RTObject obj in loadedMeshes){
@@ -61,18 +70,19 @@ public class FakePGA : MonoBehaviour
 
         // RenderFrame(rays);
 
-        InvokeRepeating("Frame", 5f, 5f); 
         // Frame();
     }
 
-    // Update is called once per frame
+    // Update is called once per frame: trace a frame as soon as the BVH is ready
     void Update()
     {
-        // Frame();
+        if (rtCam == null || bvh == null || !bvh.IsBuilt) return;
+        Frame();
     }
 
     void Frame(){
         Debug.Log("Starting frame");
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
         // DrawDebugRays(rays); //Primaries
         BounceBVH(rays);
@@ -90,11 +100,14 @@ public class FakePGA : MonoBehaviour
         // Bounce(rays);
 
         RenderFrame(rays);
+
+        lastFrameMs = (float)stopwatch.Elapsed.TotalMilliseconds;
     }
 
 
     void BounceBVH(RTRay[,] rays)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         const float EPSILON = 1e-7f;
         
         for (int x = 0; x < rays.GetLength(0); x++){
@@ -129,6 +142,8 @@ public class FakePGA : MonoBehaviour
                 }
             }
         }
+
+        lastBounceMs = (float)stopwatch.Elapsed.TotalMilliseconds;
     }
 
     Hit CheckIntersection(Vector3 V0, Vector3 E1, Vector3 E2, RTRay ray)
@@ -180,6 +195,7 @@ public class FakePGA : MonoBehaviour
 
     private RTRay[,] GeneratePrimaries(GameObject camera, float fov, int X_res, int Y_res)
     {
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         Vector3 camera_origin = camera.transform.position;
         Vector3 camera_direction = camera.transform.forward;
         Vector3 right = camera.transform.right;
@@ -206,6 +222,7 @@ public class FakePGA : MonoBehaviour
             }
         }
 
+        lastPrimariesMs = (float)stopwatch.Elapsed.TotalMilliseconds;
         return rays;
     }
 

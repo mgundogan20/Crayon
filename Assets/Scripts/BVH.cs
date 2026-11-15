@@ -14,6 +14,9 @@ public class BVH : MonoBehaviour
 
     private List<Node> tree = new List<Node>();
 
+    // Set once createTree finishes, so FakePGA knows when it can start tracing
+    public bool IsBuilt { get; private set; }
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -54,6 +57,8 @@ public class BVH : MonoBehaviour
         tree.Sort((a, b) => a.MortonCode.CompareTo(b.MortonCode));
 
         createSubTree(0, leaf_index-1, tree);
+
+        IsBuilt = true;
 
     } 
 
@@ -197,6 +202,7 @@ public class BVH : MonoBehaviour
             }
             else{
                 Gizmos.color = Color.blue;
+                Gizmos.DrawWireCube(n.aabbox.center, n.aabbox.size);
             }
         }
         Gizmos.color = Color.red;
