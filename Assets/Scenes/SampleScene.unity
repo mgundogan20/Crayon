@@ -734,7 +734,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e901d78c95add4e44ab6f3dcfcf87967, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  moveSpeed: 10
+  sensitivity: 0.05
+  normalSpeed: 1
+  sprintSpeed: 2
 --- !u!1 &381677010
 GameObject:
   m_ObjectHideFlags: 0
@@ -1931,15 +1933,15 @@ MonoBehaviour:
   loadedMeshes: []
   all_tri: []
   fov: 70
-  X_res: 500
-  Y_res: 500
+  X_res: 100
+  Y_res: 100
   rtCam: {fileID: 0}
   lastFrameMs: 0
   lastPrimariesMs: 0
   lastBounceMs: 0
   bvh: {fileID: 0}
-  num_bounces: 4
-  accumFrames: 20
+  num_bounces: 3
+  accumFrames: 1
 --- !u!4 &1199879206
 Transform:
   m_ObjectHideFlags: 0
