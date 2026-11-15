@@ -2,11 +2,11 @@
 
 Open `Assets/Scenes/TI_Shading_Demo.unity` and press Play. The Game view shows closest-hit material colors on the left and diffuse lighting with shadows on the right. The Console prints traversal statistics, and the comparison image is written to `RTDemoComparison.png` in the project root.
 
-The demo scene copies the existing `SampleScene`. `FakePGA` is disabled only in the copy, and a `TI_Shading_Demo` object runs the new component. The original scene, `FakePGA.cs`, and `RTCore_mesh.cs` are unchanged. `RTCore > Prepare Traversal Demo` recreates the demo scene from `SampleScene`; save your current scene first.
+The demo scene copies the existing `SampleScene`. `FakePGA` is disabled only in the copy, and a `TI_Shading_Demo` object runs the new component. The original scene, `FakePGA.cs`, and `RTObject.cs` are unchanged. `RTCore > Prepare Traversal Demo` recreates the demo scene from `SampleScene`; save your current scene first.
 
 ## Implementation
 
-The component reads world-space triangles and material data from `RTCore_mesh` after its first Update. It uses mesh-level axis-aligned bounding boxes to reject triangle groups, Moller-Trumbore intersection tests to select the closest hit, and Lambert diffuse shading with shadow rays. This is a CPU software prototype, not a full BVH or FPGA implementation. Lighting is a simplified model rather than a match for Unity's built-in renderer.
+The component reads world-space triangles and material data from `RTObject` after its first Update. It uses mesh-level axis-aligned bounding boxes to reject triangle groups, Moller-Trumbore intersection tests to select the closest hit, and Lambert diffuse shading with shadow rays. This is a CPU software prototype, not a full BVH or FPGA implementation. Lighting is a simplified model rather than a match for Unity's built-in renderer.
 
 ## Validation
 

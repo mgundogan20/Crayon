@@ -68,7 +68,7 @@ public class RTTraversalDemo : MonoBehaviour
         LoadMeshes();
         if (triangleCount == 0)
         {
-            Debug.LogError("No triangles found. Check RTCore_mesh components.");
+            Debug.LogError("No triangles found. Check RTObject components.");
             return;
         }
 
@@ -127,11 +127,11 @@ public class RTTraversalDemo : MonoBehaviour
     {
         meshes.Clear();
         triangleCount = 0;
-        RTCore_mesh[] objects = Object.FindObjectsByType<RTCore_mesh>(FindObjectsSortMode.None);
+        RTObject[] objects = Object.FindObjectsByType<RTObject>(FindObjectsSortMode.None);
 
-        foreach (RTCore_mesh obj in objects)
+        foreach (RTObject obj in objects)
         {
-            Triangle[] source = obj.rtMesh.triangles;
+            Triangle[] source = obj.mesh.triangles;
             if (source == null || source.Length == 0)
                 continue;
 
@@ -149,8 +149,8 @@ public class RTTraversalDemo : MonoBehaviour
                 mesh.max = Vector3.Max(mesh.max, Vector3.Max(a, Vector3.Max(b, c)));
                 mesh.triangles[i] = new TriData {
                     v0 = a, e1 = source[i].E1, e2 = source[i].E2,
-                    color = obj.materialData.diffuseColor,
-                    emission = obj.materialData.emissionColor,
+                    color = obj.Material.diffuseColor,
+                    emission = obj.Material.emissionColor,
                     id = triangleCount++
                 };
             }
