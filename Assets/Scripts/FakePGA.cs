@@ -93,9 +93,14 @@ public class FakePGA : MonoBehaviour
     {
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         const float EPSILON = 1e-7f;
-        
-        for (int x = 0; x < rays.GetLength(0); x++){
-            for (int y = 0; y < rays.GetLength(1); y++){
+        int width = rays.GetLength(0);
+        int height = rays.GetLength(1);
+
+        // Every ray of the frame is a separate work item; each (x, y) only writes its own rays[x, y]
+        System.Threading.Tasks.Parallel.For(0, width * height, i => {
+            int x = i / height;
+            int y = i % height;
+            {
                 Hit first_hit;
                 first_hit.surface_normal = new Vector3(0,0,0);
                 first_hit.material_id = 0; //material[0] Should be the background material
@@ -125,7 +130,7 @@ public class FakePGA : MonoBehaviour
                     ray.direction = PerturbDirection(ray.direction, (Mathf.PI/256f) * (0xFF - RTObject.materials[first_hit.material_id].smoothness));
                 }
             }
-        }
+        });
 
         lastBounceMs = (float)stopwatch.Elapsed.TotalMilliseconds;
     }
@@ -269,14 +274,25 @@ public class FakePGA : MonoBehaviour
         }
     }
 
+    // UnityEngine.Random only works on the main thread, so each thread gets its own System.Random
+    [System.ThreadStatic] static System.Random threadRng;
+    static int rngSeed = System.Environment.TickCount;
+
+    static float RandomRange(float min, float max)
+    {
+        if (threadRng == null)
+            threadRng = new System.Random(System.Threading.Interlocked.Increment(ref rngSeed));
+        return min + (float)threadRng.NextDouble() * (max - min);
+    }
+
     public static Vector3 PerturbDirection(Vector3 initial, float maxAngleRad)
     {
         // Get angle from z
-        float cosTheta = Random.Range(Mathf.Cos(maxAngleRad), 1f);
+        float cosTheta = RandomRange(Mathf.Cos(maxAngleRad), 1f);
         float sinTheta = Mathf.Sqrt(1f - cosTheta * cosTheta);
 
         // Get angle from x
-        float phi = Random.Range(0f, 2*Mathf.PI);
+        float phi = RandomRange(0f, 2*Mathf.PI);
 
         // Convert to cartesian
         Vector3 localDir = new Vector3(
