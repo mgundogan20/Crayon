@@ -38,7 +38,7 @@ public class FakePGA : MonoBehaviour
     public float lastBounceMs;
     public BVH bvh;
 
-    public int num_bounces;
+    public int num_bounces = 3;
     
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -64,13 +64,6 @@ public class FakePGA : MonoBehaviour
         foreach(RTObject obj in loadedMeshes){
             all_tri.AddRange(obj.mesh.triangles);
         }
-
-        // RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
-        // Bounce(rays);
-
-        // RenderFrame(rays);
-
-        // Frame();
     }
 
     // Update is called once per frame: trace a frame as soon as the BVH is ready
@@ -84,20 +77,11 @@ public class FakePGA : MonoBehaviour
         Debug.Log("Starting frame");
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
-        // DrawDebugRays(rays); //Primaries
-        BounceBVH(rays);
 
-        // DrawDebugRays(rays); //Secondaries
-        BounceBVH(rays);
-        
-        // DrawDebugRays(rays); //Secondaries
-        BounceBVH(rays);
-        
-        // DrawDebugRays(rays); //Secondaries
-        BounceBVH(rays);
-        
-        // DrawDebugRays(rays); //Secondaries
-        // Bounce(rays);
+        for (int i=0; i<num_bounces ;i++){
+            // DrawDebugRays(rays);
+            BounceBVH(rays);
+        }
 
         RenderFrame(rays);
 
@@ -201,7 +185,6 @@ public class FakePGA : MonoBehaviour
         Vector3 right = camera.transform.right;
         Vector3 up = camera.transform.up;
 
-        //TODO replace fov with real pixel size calculation
         RTRay[,] rays = new RTRay[X_res, Y_res];
         float delta = (Mathf.PI * fov/180)/ Y_res;
 

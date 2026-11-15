@@ -112,3 +112,11 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+*.meta
+
+/[Aa]ssets/Lazy Squirrel Labs/
+
+Assets/Tree_Textures/*
+.vscode/launch.json
+.claude/settings.local.json

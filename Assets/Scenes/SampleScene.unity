@@ -1728,7 +1728,7 @@ MonoBehaviour:
   lastPrimariesMs: 0
   lastBounceMs: 0
   bvh: {fileID: 0}
-  num_bounces: 0
+  num_bounces: 3
   accumFrames: 1
 --- !u!4 &1199879206
 Transform:
