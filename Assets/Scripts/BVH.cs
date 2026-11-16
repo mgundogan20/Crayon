@@ -3,12 +3,17 @@ using UnityEngine;
 
 public class BVH : MonoBehaviour
 {
+    public struct Box
+    {
+        public Vector3 center;
+        public Vector3 size;
+    }
     public struct Node
     {
         public int left;
         public int right;
         public int id;
-        public Bounds aabbox;
+        public Box aabbox;
         public uint MortonCode;
     }
 
@@ -46,7 +51,12 @@ public class BVH : MonoBehaviour
                 leaf.id = leaf_index;
                 leaf.left = -1;
                 leaf.right = -1;
-                leaf.aabbox = GeometryUtility.CalculateBounds(vertices, Matrix4x4.identity);
+                
+                Bounds bounds = GeometryUtility.CalculateBounds(vertices, Matrix4x4.identity);
+                
+                leaf.aabbox.center = bounds.center;
+                leaf.aabbox.size = bounds.size;
+
                 leaf.MortonCode = FindMorton(leaf.aabbox);
 
                 tree.Add(leaf);
@@ -75,8 +85,7 @@ public class BVH : MonoBehaviour
             Node parentNode;
             parentNode.left = createSubTree(begin, split, Morton);
             parentNode.right = createSubTree(split+1, end, Morton);
-            parentNode.aabbox = tree[parentNode.left].aabbox;
-            parentNode.aabbox.Encapsulate(tree[parentNode.right].aabbox);
+            parentNode.aabbox = Union(tree[parentNode.left].aabbox, tree[parentNode.right].aabbox);
             parentNode.MortonCode = FindMorton(parentNode.aabbox);
 
             parentNode.id = tree.Count;
@@ -136,7 +145,7 @@ public class BVH : MonoBehaviour
         return n;
     }
 
-    uint FindMorton(Bounds box){
+    uint FindMorton(Box box){
         Bounds scene_box = new Bounds(new Vector3(0,0,0), new Vector3(100, 100, 100));
 
         // Normalize the box center to [0,1] inside the scene bounds
@@ -170,14 +179,13 @@ public class BVH : MonoBehaviour
         List<Node> hits = new List<Node>();
         if (tree.Count == 0) return hits;
 
-        Ray r = new Ray(ray.origin, ray.direction);
         Stack<int> stack = new Stack<int>();
         stack.Push(tree.Count - 1); // root is the last node added
 
         while (stack.Count > 0)
         {
             Node n = tree[stack.Pop()];
-            if (!n.aabbox.IntersectRay(r)) continue; // prune whole subtree
+            if (!BoxRayIntersect(n.aabbox, ray)) continue; // prune whole subtree
 
             if (n.left == -1 && n.right == -1)
             {
@@ -192,20 +200,68 @@ public class BVH : MonoBehaviour
         return hits;
     }
 
-    void OnDrawGizmos()
-    {
-        if (tree==null) return;
-        foreach(Node n in tree){
-            if (n.left==-1 && n.right==-1){
-                Gizmos.color = Color.green;
-                Gizmos.DrawWireCube(n.aabbox.center, n.aabbox.size);
+    // Slab test: true if the ray hits the box at or in front of its origin.
+    // Uses '>' (not '>=') so zero-thickness boxes of axis-aligned triangles still register hits.
+    bool BoxRayIntersect(Box box, RTRay ray){
+        Vector3 half = box.size * 0.5f;
+        Vector3 min = box.center - half;
+        Vector3 max = box.center + half;
+
+        float tNear = 0f;
+        float tFar = float.PositiveInfinity;
+
+        for (int axis = 0; axis < 3; axis++)
+        {
+            float o = ray.origin[axis];
+            float d = ray.direction[axis];
+
+            // Parallel to this slab: inside it or never hits (avoids 0 * inf = NaN)
+            if (Mathf.Abs(d) < 1e-8f)
+            {
+                if (o < min[axis] || o > max[axis])
+                    return false;
+                continue;
             }
-            else{
-                Gizmos.color = Color.blue;
-                Gizmos.DrawWireCube(n.aabbox.center, n.aabbox.size);
-            }
+
+            float invD = 1f / d;
+            float t0 = (min[axis] - o) * invD;
+            float t1 = (max[axis] - o) * invD;
+            if (t0 > t1) { float tmp = t0; t0 = t1; t1 = tmp; }
+
+            tNear = Mathf.Max(tNear, t0);
+            tFar = Mathf.Min(tFar, t1);
+            if (tNear > tFar)
+                return false;
         }
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(new Vector3(0,0,0), new Vector3(100, 100, 100));
+
+        return true;
     }
+
+    // Smallest box enclosing both boxes
+    Box Union(Box b1, Box b2){
+        Vector3 min = Vector3.Min(b1.center - b1.size * 0.5f, b2.center - b2.size * 0.5f);
+        Vector3 max = Vector3.Max(b1.center + b1.size * 0.5f, b2.center + b2.size * 0.5f);
+
+        Box result;
+        result.center = (min + max) * 0.5f;
+        result.size = max - min;
+        return result;
+    }
+
+    // void OnDrawGizmos()
+    // {
+    //     if (tree==null) return;
+    //     foreach(Node n in tree){
+    //         if (n.left==-1 && n.right==-1){
+    //             Gizmos.color = Color.green;
+    //             Gizmos.DrawWireCube(n.aabbox.center, n.aabbox.size);
+    //         }
+    //         else{
+    //             Gizmos.color = Color.blue;
+    //             Gizmos.DrawWireCube(n.aabbox.center, n.aabbox.size);
+    //         }
+    //     }
+    //     Gizmos.color = Color.red;
+    //     Gizmos.DrawWireCube(new Vector3(0,0,0), new Vector3(100, 100, 100));
+    // }
 }
