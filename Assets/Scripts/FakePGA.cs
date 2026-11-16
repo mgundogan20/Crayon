@@ -75,7 +75,6 @@ public class FakePGA : MonoBehaviour
     }
 
     void Frame(){
-        Debug.Log("Starting frame");
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         RTRay[,] rays = GeneratePrimaries(rtCam, fov, X_res, Y_res);
 

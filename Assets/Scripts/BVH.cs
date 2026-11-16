@@ -146,7 +146,7 @@ public class BVH : MonoBehaviour
     }
 
     uint FindMorton(Box box){
-        Bounds scene_box = new Bounds(new Vector3(0,0,0), new Vector3(100, 100, 100));
+        Bounds scene_box = new Bounds(new Vector3(0,0,0), new Vector3(10, 10, 10));
 
         // Normalize the box center to [0,1] inside the scene bounds
         Vector3 c = box.center - scene_box.min;
