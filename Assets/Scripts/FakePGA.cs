@@ -13,7 +13,8 @@ public struct Hit
 {
     public float distance;
     public Vector3 position;
-    public Vector3 surface_normal;
+    public Vector3 surface_normal;   // geometric (face) normal
+    public Vector3 shading_normal;   // interpolated vertex normal
     public int material_id;
 }
 
@@ -101,18 +102,21 @@ public class FakePGA : MonoBehaviour
             int x = i / height;
             int y = i % height;
             {
+                ref RTRay ray = ref rays[x, y];
+                if (ray.ray_col == Vector3.zero) return;
+
                 Hit first_hit;
                 first_hit.surface_normal = new Vector3(0,0,0);
+                first_hit.shading_normal = new Vector3(0,0,0);
                 first_hit.material_id = 0; //material[0] Should be the background material
                 first_hit.position = new Vector3(0,0,0);
                 first_hit.distance = 1e10f;
 
-                ref RTRay ray = ref rays[x, y];
                 List<BVH.Node> hitLeaves = bvh.GetIntersectedLeaves(ray);
 
                 foreach(BVH.Node leaf in hitLeaves){
                     Triangle t = all_tri[leaf.id];
-                    Hit hit = CheckIntersection(t.V0, t.E1, t.E2, ray);
+                    Hit hit = CheckIntersection(t, ray);
                     if(hit.distance > EPSILON){
                         if(hit.distance < first_hit.distance){
                             first_hit = hit;
@@ -121,12 +125,14 @@ public class FakePGA : MonoBehaviour
                     }
                 }
 
+                // Update color
                 ray.accum_col += Vector3.Scale(ray.ray_col, RTObject.materials[first_hit.material_id].emissionColor);
                 ray.ray_col = Vector3.Scale(ray.ray_col, RTObject.materials[first_hit.material_id].diffuseColor);
                 
+                // Update ray
                 if (first_hit.distance < 1e9f){
                     ray.origin = first_hit.position + (first_hit.surface_normal*1e-4f);
-                    ray.direction -= first_hit.surface_normal * 2 * Vector3.Dot(ray.direction, first_hit.surface_normal);
+                    ray.direction -= first_hit.shading_normal * 2 * Vector3.Dot(ray.direction, first_hit.shading_normal);
                     ray.direction = PerturbDirection(ray.direction, (Mathf.PI/256f) * (0xFF - RTObject.materials[first_hit.material_id].smoothness));
                 }
             }
@@ -135,12 +141,14 @@ public class FakePGA : MonoBehaviour
         lastBounceMs = (float)stopwatch.Elapsed.TotalMilliseconds;
     }
 
-    Hit CheckIntersection(Vector3 V0, Vector3 E1, Vector3 E2, RTRay ray)
+    Hit CheckIntersection(Triangle t, RTRay ray)
     {
+        Vector3 V0 = t.V0, E1 = t.E1, E2 = t.E2;
         Hit hit;
         hit.distance = -1;
         hit.position = new Vector3(0,0,0);
         hit.surface_normal = new Vector3(0,0,0);
+        hit.shading_normal = new Vector3(0,0,0);
         hit.material_id = 0;
         
         const float EPSILON = 1e-7f;
@@ -177,6 +185,8 @@ public class FakePGA : MonoBehaviour
         hit.position = ray.origin + hit.distance*ray.direction;
         hit.surface_normal = Vector3.Cross(E1, E2);
         hit.surface_normal /= hit.surface_normal.magnitude;
+        // Smooth shading: interpolate the vertex normals with the barycentrics
+        hit.shading_normal = ((1f - u - v) * t.N0 + u * t.N1 + v * t.N2).normalized;
         return hit;
     }
 
