@@ -1,0 +1,376 @@
+/*
+
+AMD Vivado v2024.1 (64-bit) [Major: 2024, Minor: 1]
+SW Build: 5076996 on Wed May 22 18:36:09 MDT 2024
+IP Build: 5075265 on Wed May 22 21:45:21 MDT 2024
+IP Build: 5075265 on Wed May 22 21:45:21 MDT 2024
+
+Process ID (PID): 467704
+License: Customer
+Mode: GUI Mode
+
+Current time: 	Tue Nov 24 12:40:06 EST 2026
+Time zone: 	Eastern Standard Time (America/New_York)
+
+OS: AlmaLinux release 8.10 (Cerulean Leopard)
+OS Version: 4.18.0-553.187.1.el8_10.x86_64
+OS Architecture: amd64
+Available processors (cores): 28
+LSB Release Description: NAME=AlmaLinux
+
+Display: 1
+Screen size: 1920x897
+Local screen bounds: x = 0, y = 27, width = 1920, height = 870
+Screen resolution (DPI): 100
+Available screens: 1
+Default font: family=Dialog,name=Dialog,style=plain,size=12
+Scale size: 12
+OS font scaling: 100%
+Anti-Alias Enabled: false
+
+Java version: 	21.0.1 64-bit
+JavaFX version: 21.0.1
+Java home: 	/net/engnas/eng_linux/opt/Xilinx/2024.1/Vivado/2024.1/tps/lnx64/jre21.0.1_12
+Java executable: 	/net/engnas/eng_linux/opt/Xilinx/2024.1/Vivado/2024.1/tps/lnx64/jre21.0.1_12/bin/java
+Java arguments: 	[-Dsun.java2d.pmoffscreen=false, -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2, -Dsun.java2d.xrender=false, -Dsun.java2d.uiScale.enabled=false, -Dswing.aatext=true, -XX:-UsePerfData, -Djdk.map.althashing.threshold=512, -XX:StringTableSize=4072, -XX:+UseStringDeduplication, -XX:MaxGCPauseMillis=200, -XX:+ParallelRefProcEnabled, --add-opens=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-opens=java.base/java.nio=ALL-UNNAMED, --add-opens=java.desktop/sun.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-opens=java.desktop/javax.swing=ALL-UNNAMED, --add-opens=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-opens=java.desktop/java.awt.event=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.plaf.synth=ALL-UNNAMED, --add-exports=java.base/java.nio=ALL-UNNAMED, --add-exports=java.desktop/sun.swing=ALL-UNNAMED, --add-exports=java.desktop/javax.swing=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.tree=ALL-UNNAMED, --add-exports=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED, --add-exports=java.desktop/sun.swing=ALL-UNNAMED, --add-exports=java.desktop/sun.swing.table=ALL-UNNAMED, --add-exports=java.desktop/sun.swing.plaf.synth=ALL-UNNAMED, --add-exports=java.desktop/sun.awt.shell=ALL-UNNAMED, --add-exports=java.base/sun.security.action=ALL-UNNAMED, --add-exports=java.desktop/sun.font=ALL-UNNAMED, --add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED, -XX:NewSize=80m, -XX:MaxNewSize=80m, -Xms512m, -Xmx4072m, -Xss10m, -Xrs]
+Java initial memory (-Xms): 	512 MB
+Java maximum memory (-Xmx):	 3 GB
+
+User name: 	gundogan
+User home directory: /usr4/ec580/gundogan
+User working directory: /usr4/ec580/gundogan/Desktop/Crayon
+User country: 	US
+User language: 	en
+User locale: 	en_US
+
+RDI_BASEROOT: /net/engnas/eng_linux/opt/Xilinx/2024.1/Vivado
+HDI_APPROOT: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1
+RDI_DATADIR: /net/engnas/eng_linux/opt/Xilinx/2024.1/SharedData/2024.1/data:/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/data
+RDI_BINDIR: /net/engnas/eng_linux/opt/Xilinx/2024.1/Vivado/2024.1/bin
+
+Vivado preferences file: /usr4/ec580/gundogan/.Xilinx/Vivado/2024.1/vivado.xml
+Vivado preferences directory: /usr4/ec580/gundogan/.Xilinx/Vivado/2024.1/
+Vivado layouts directory: /usr4/ec580/gundogan/.Xilinx/Vivado/2024.1/data/layouts
+PlanAhead jar file: 	/net/engnas/eng_linux/opt/Xilinx/2024.1/Vivado/2024.1/lib/classes/planAhead.jar
+Vivado log file: 	/usr4/ec580/gundogan/Desktop/Crayon/vivado.log
+Vivado journal file: 	/usr4/ec580/gundogan/Desktop/Crayon/vivado.jou
+Engine tmp dir: 	./.Xil/Vivado-467704-scc-yf1
+Non-Default Parameters:	[]
+
+Xilinx & AMD Environment Variables
+--------------------------------------------------------------------------------------------
+LMOD_SHELL_PRGM: bash
+RDI_APPROOT: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1
+RDI_BASEROOT: /ad/eng/opt/Xilinx/2024.1/Vivado
+RDI_BINROOT: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/bin
+RDI_BUILD: yes
+RDI_DATADIR: /ad/eng/opt/Xilinx/2024.1/SharedData/2024.1/data:/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/data
+RDI_INSTALLROOT: /ad/eng/opt/Xilinx/2024.1
+RDI_INSTALLVER: 2024.1
+RDI_JAVA_PLATFORM: 
+RDI_JAVA_VERSION: 21.0.1_12
+RDI_LIBDIR: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/lib/lnx64.o/Rhel/8:/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/lib/lnx64.o/Rhel:/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/lib/lnx64.o
+RDI_OPT_EXT: .o
+RDI_PATCHROOT: 
+RDI_PLATFORM: lnx64
+RDI_PREPEND_PATH: /ad/eng/opt/Xilinx/2024.1/Vitis/2024.1/bin:/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/ids_lite/ISE/bin/lin64
+RDI_PROG: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/bin/unwrapped/lnx64.o/vivado
+RDI_SESSION_INFO: /usr4/ec580/gundogan/Desktop/Crayon:scc-yf1_1795541952_467597
+RDI_SHARED_DATA: /ad/eng/opt/Xilinx/2024.1/SharedData/2024.1/data
+RDI_TPS_ROOT: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/tps/lnx64
+RDI_USE_JDK21: True
+SHELL: /bin/bash
+XILINX: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/ids_lite/ISE
+XILINXD_LICENSE_FILE: 2100@xilinxlm.bu.edu
+XILINX_DSP: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/ids_lite/ISE
+XILINX_HLS: /ad/eng/opt/Xilinx/2024.1/Vitis_HLS/2024.1
+XILINX_PLANAHEAD: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1
+XILINX_SDK: /ad/eng/opt/Xilinx/2024.1/Vitis/2024.1
+XILINX_VITIS: /ad/eng/opt/Xilinx/2024.1/Vitis/2024.1
+XILINX_VIVADO: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1
+XILINX_VIVADO_HLS: /ad/eng/opt/Xilinx/2024.1/Vivado/2024.1
+
+
+GUI allocated memory:	512 MB
+GUI max memory:		4,072 MB
+Engine allocated memory: 1,453 MB
+
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
+Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
+
+*/
+
+// TclEventType: START_GUI
+// Tcl Message: start_gui 
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,503 MB. GUI used memory: 67 MB. Current time: 11/24/26, 12:40:07 PM EST
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // am (PAResourceItoN.MainMenuMgr_PROJECT, Project)
+selectMenuItem(PAResourceCommand.PACommandNames_NEW_PROJECT, "New..."); // ap (PAResourceCommand.PACommandNames_NEW_PROJECT, new_project_menu)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+// Run Command: PAResourceCommand.PACommandNames_NEW_PROJECT
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+selectMoreButton(PAResourceOtoP.ProjectNameChooser_CHOOSE_PROJECT_LOCATION, (String) null, "New Project"); // r (PAResourceOtoP.ProjectNameChooser_CHOOSE_PROJECT_LOCATION)
+setFolderChooser("/usr4/ec580/gundogan/Desktop/Crayon/FPGA");
+// Elapsed time: 21 seconds
+setText(PAResourceOtoP.ProjectNameChooser_PROJECT_NAME, "Crayon_FPGA"); // R (PAResourceOtoP.ProjectNameChooser_PROJECT_NAME)
+selectMoreButton(PAResourceOtoP.ProjectNameChooser_CHOOSE_PROJECT_LOCATION, (String) null, "New Project"); // r (PAResourceOtoP.ProjectNameChooser_CHOOSE_PROJECT_LOCATION)
+setFolderChooser("/usr4/ec580/gundogan/Desktop/CRAYON");
+// Elapsed time: 12 seconds
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+// WARNING: HEventQueue.dispatchEvent() is taking  1001 ms.
+// Elapsed time: 21 seconds
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,627 MB. GUI used memory: 68 MB. Current time: 11/24/26, 12:41:23 PM EST
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+selectButton(PAResourceAtoD.ConstraintsChooserPanel_ADD_FILES, "Add Files", "New Project"); // a (PAResourceAtoD.ConstraintsChooserPanel_ADD_FILES)
+dismissFileChooser();
+// [GUI Memory]: 93 MB (+94714kb) [00:02:12]
+// [Engine Memory]: 1,628 MB (+1555974kb) [00:02:13]
+// [GUI Memory]: 98 MB (+936kb) [00:02:13]
+// [GUI Memory]: 129 MB (+27326kb) [00:02:13]
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+// WARNING: HEventQueue.dispatchEvent() is taking  1010 ms.
+selectTab(PAResourceOtoP.PartChooser_TABBED_PANE, (HResource) null, "Boards", 1); // g (PAResourceOtoP.PartChooser_TABBED_PANE)
+// WARNING: HEventQueue.dispatchEvent() is taking  2526 ms.
+// WARNING: HEventQueue.dispatchEvent() is taking  1001 ms.
+// [GUI Memory]: 202 MB (+69266kb) [00:02:49]
+// Elapsed time: 30 seconds
+setText("PAResourceAtoD.BoardChooser_BOARD_TABLE_SEARCH_FIELD", (String) null); // OverlayTextField (PAResourceAtoD.BoardChooser_BOARD_TABLE_SEARCH_FIELD)
+selectTab(PAResourceOtoP.PartChooser_TABBED_PANE, (HResource) null, "Parts", 0); // g (PAResourceOtoP.PartChooser_TABBED_PANE)
+// Elapsed time: 15 seconds
+selectComboBox(PAResourceEtoH.FPGAChooser_FAMILY, "Artix-7", 1); // a.a (PAResourceEtoH.FPGAChooser_FAMILY)
+// Elapsed time: 356 seconds
+setText("PAResourceEtoH.FPGAChooser_FPGA_TABLE_SEARCH_FIELD", "100tcsg324"); // OverlayTextField (PAResourceEtoH.FPGAChooser_FPGA_TABLE_SEARCH_FIELD)
+selectComboBox(PAResourceEtoH.FPGAChooser_SPEED, "-1", 1); // a.a (PAResourceEtoH.FPGAChooser_SPEED)
+selectTable(PAResourceEtoH.FPGAChooser_FPGA_TABLE, "xc7a100tcsg324-1 ; 324 ; 210 ; 63400 ; 126800 ; 135 ; 0 ; 240 ; 32 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 0 ; 1 ; 6 ;  ;  ;  ;  ; 0 ;  ;  ;  ;  ;  ;  ; 0.95 ; 0.95 ; 1.05", 0, "xc7a100tcsg324-1", 0); // c (PAResourceEtoH.FPGAChooser_FPGA_TABLE)
+selectButton("NEXT", "Next >", "New Project"); // JButton (NEXT)
+// TclEventType: DEBUG_PROBE_SET_CHANGE
+// TclEventType: FLOW_ADDED
+// TclEventType: FILE_SET_NEW
+// TclEventType: RUN_ADD
+// TclEventType: RUN_CURRENT
+// TclEventType: PROJECT_DASHBOARD_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_DASHBOARD_GADGET_NEW
+// TclEventType: PROJECT_DASHBOARD_GADGET_CHANGE
+// TclEventType: PROJECT_NEW
+// Tcl Message: create_project Crayon_FPGA /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA -part xc7a100tcsg324-1 
+// Tcl Message: INFO: [IP_Flow 19-234] Refreshing IP repositories INFO: [IP_Flow 19-1704] No user IP repositories specified 
+// HMemoryUtils.trashcanNow. Engine heap size: 1,692 MB. GUI used memory: 70 MB. Current time: 11/24/26, 12:48:47 PM EST
+// TclEventType: PROJECT_NEW
+// [Engine Memory]: 1,782 MB (+75770kb) [00:09:23]
+// WARNING: HEventQueue.dispatchEvent() is taking  1826 ms.
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// Tcl Message: INFO: [IP_Flow 19-2313] Loaded Vivado IP repository '/ad/eng/opt/Xilinx/2024.1/Vivado/2024.1/data/ip'. 
+// TclEventType: FILE_SET_OPTIONS_CHANGE
+// Tcl Message: create_project: Time (s): cpu = 00:00:11 ; elapsed = 00:00:07 . Memory (MB): peak = 7931.531 ; gain = 175.613 ; free physical = 59183 ; free virtual = 150345 
+// Elapsed time: 10 seconds
+selectButton("FINISH", "Finish", "New Project"); // JButton (FINISH)
+// 'g' command handler elapsed time: 516 seconds
+dismissDialog("Create Project"); // bj (Create Project Progress)
+dismissDialog("New Project"); // f (dialog0)
+// Elapsed time: 21 seconds
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints]", 1); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1]", 2, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1]", 2, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1]", 2, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+selectButton(PAResourceCommand.PACommandNames_ADD_SOURCES, "Sources_add_sources"); // B (PAResourceCommand.PACommandNames_ADD_SOURCES, Sources_add_sources)
+// Run Command: PAResourceCommand.PACommandNames_ADD_SOURCES
+selectButton("NEXT", "Next >", "Add Sources"); // JButton (NEXT)
+selectButton(PAResourceAtoD.ConstraintsChooserPanel_CREATE_FILE, "Create File", "Add Sources"); // a (PAResourceAtoD.ConstraintsChooserPanel_CREATE_FILE)
+// Tcl Command: 'file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1'
+// Tcl Message: file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1 
+// Elapsed time: 17 seconds
+setText(PAResourceAtoD.CreateConstraintsFilePanel_FILE_NAME, "constraints_nexys"); // R (PAResourceAtoD.CreateConstraintsFilePanel_FILE_NAME)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Create Constraints File"); // a (RDIResource.BaseDialog_OK)
+dismissDialog("Create Constraints File"); // u (dialog5)
+selectButton("FINISH", "Finish", "Add Sources"); // JButton (FINISH)
+// 'f' command handler elapsed time: 26 seconds
+// Tcl Command: 'file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new'
+dismissDialog("Add Sources"); // c (dialog4)
+// Tcl Message: file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new 
+// Tcl Message: close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new/constraints_nexys.xdc w ] 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: add_files -fileset constrs_1 /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new/constraints_nexys.xdc 
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1]", 2); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, constraints_nexys.xdc]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, constraints_nexys.xdc]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints, constrs_1, constraints_nexys.xdc]", 3, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+selectCodeEditor("constraints_nexys.xdc", 412, 108); // ac (constraints_nexys.xdc)
+selectButton("ClipboardsDialog.F_OK", "OK", "Select a Previous Clipboard to Paste"); // JButton (ClipboardsDialog.F_OK)
+typeControlKey((HResource) null, "constraints_nexys.xdc", 'v'); // ac (constraints_nexys.xdc)
+// HMemoryUtils.trashcanNow. Engine heap size: 1,874 MB. GUI used memory: 79 MB. Current time: 11/24/26, 12:50:07 PM EST
+selectCodeEditor("constraints_nexys.xdc", 483, 126); // ac (constraints_nexys.xdc)
+// TclEventType: FILE_SET_CHANGE
+// [Engine Memory]: 1,874 MB (+2626kb) [00:10:42]
+// Elapsed time: 13 seconds
+collapseTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Constraints]", 1); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources]", 0, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources]", 0, false, false, false, false, true, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Popup Trigger
+selectMenu(PAResourceCommand.PACommandNames_AUTO_UPDATE_HIER, "Hierarchy Update"); // am (PAResourceCommand.PACommandNames_AUTO_UPDATE_HIER, Hierarchy Update)
+selectMenu(PAResourceQtoS.SrcMenu_IP_HIERARCHY, "IP Hierarchy"); // am (PAResourceQtoS.SrcMenu_IP_HIERARCHY, IP Hierarchy)
+selectMenuItem(PAResourceCommand.PACommandNames_ADD_SOURCES, "Add Sources..."); // ap (PAResourceCommand.PACommandNames_ADD_SOURCES, add_sources_menu)
+// Run Command: PAResourceCommand.PACommandNames_ADD_SOURCES
+// Elapsed time: 57 seconds
+selectRadioButton(PAResourceAtoD.AddSrcWizard_SPECIFY_HDL_NETLIST_BLOCK_DESIGN, "Add or create design sources"); // a (PAResourceAtoD.AddSrcWizard_SPECIFY_HDL_NETLIST_BLOCK_DESIGN)
+selectButton("NEXT", "Next >", "Add Sources"); // JButton (NEXT)
+selectButton(PAResourceQtoS.SrcChooserPanel_CREATE_FILE, "Create File", "Add Sources"); // a (PAResourceQtoS.SrcChooserPanel_CREATE_FILE)
+setText(PAResourceAtoD.CreateSrcFileDialog_FILE_NAME, "top"); // R (PAResourceAtoD.CreateSrcFileDialog_FILE_NAME)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Create Source File"); // a (RDIResource.BaseDialog_OK)
+// Tcl Command: 'file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new'
+dismissDialog("Create Source File"); // k (dialog8)
+// Tcl Message: file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new 
+selectButton(PAResourceQtoS.SrcChooserPanel_CREATE_FILE, "Create File", "Add Sources"); // a (PAResourceQtoS.SrcChooserPanel_CREATE_FILE)
+// Elapsed time: 27 seconds
+setText(PAResourceAtoD.CreateSrcFileDialog_FILE_NAME, "scene_loader"); // R (PAResourceAtoD.CreateSrcFileDialog_FILE_NAME)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Create Source File"); // a (RDIResource.BaseDialog_OK)
+dismissDialog("Create Source File"); // k (dialog9)
+selectButton(PAResourceQtoS.SrcChooserPanel_CREATE_FILE, "Create File", "Add Sources"); // a (PAResourceQtoS.SrcChooserPanel_CREATE_FILE)
+setText(PAResourceAtoD.CreateSrcFileDialog_FILE_NAME, "uart_rx"); // R (PAResourceAtoD.CreateSrcFileDialog_FILE_NAME)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Create Source File"); // a (RDIResource.BaseDialog_OK)
+dismissDialog("Create Source File"); // k (dialog10)
+selectButton(PAResourceQtoS.SrcChooserPanel_CREATE_FILE, "Create File", "Add Sources"); // a (PAResourceQtoS.SrcChooserPanel_CREATE_FILE)
+setText(PAResourceAtoD.CreateSrcFileDialog_FILE_NAME, "uart_tx"); // R (PAResourceAtoD.CreateSrcFileDialog_FILE_NAME)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Create Source File"); // a (RDIResource.BaseDialog_OK)
+dismissDialog("Create Source File"); // k (dialog11)
+// Elapsed time: 107 seconds
+selectButton("FINISH", "Finish", "Add Sources"); // JButton (FINISH)
+// 'f' command handler elapsed time: 218 seconds
+dismissDialog("Add Sources"); // c (dialog7)
+// Tcl Message: close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_rx.v w ] 
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_rx.v 
+// Tcl Message: close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_tx.v w ] 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_tx.v 
+// Tcl Message: close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/scene_loader.v w ] 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/scene_loader.v 
+// Tcl Message: close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/top.v w ] 
+// TclEventType: FILE_SET_CHANGE
+// Tcl Message: add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/top.v 
+selectList(PAResourceAtoD.DefineModulesDialog_NEW_SOURCE_FILES, "top.v", 3); // q (PAResourceAtoD.DefineModulesDialog_NEW_SOURCE_FILES)
+selectButton(RDIResource.BaseDialog_OK, "OK", "Define Modules"); // a (RDIResource.BaseDialog_OK)
+// TclEventType: FILE_SET_CHANGE
+selectButton("OptionPane.button", "Yes", "Define Modules"); // JButton (OptionPane.button)
+dismissDialog("Define Modules"); // n (dialog12)
+// Elapsed Time for: 'L.f': 05m:32s
+// HMemoryUtils.trashcanNow. Engine heap size: 1,899 MB. GUI used memory: 81 MB. Current time: 11/24/26, 12:54:23 PM EST
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 05m:36s
+// Tcl Message: update_compile_order -fileset sources_1 
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources]", 0); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+// Elapsed Time for: 'L.f': 05m:38s
+expandTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files]", 1); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+// Elapsed Time for: 'L.f': 05m:42s
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, scene_loader.v]", 2, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, scene_loader.v]", 2, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+// Elapsed Time for: 'L.f': 05m:44s
+// [Engine Memory]: 2,007 MB (+42034kb) [00:15:08]
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 05m:46s
+// Tcl Message: update_compile_order -fileset sources_1 
+// HMemoryUtils.trashcanNow. Engine heap size: 2,010 MB. GUI used memory: 82 MB. Current time: 11/24/26, 12:54:37 PM EST
+// Elapsed Time for: 'L.f': 05m:48s
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+// Elapsed Time for: 'L.f': 05m:52s
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+selectCodeEditor("uart_tx.v", 114, 106); // ac (uart_tx.v)
+typeControlKey((HResource) null, "uart_tx.v", 'v'); // ac (uart_tx.v)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 06m:04s
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, uart_tx.v]", 3, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+// Elapsed Time for: 'L.f': 06m:08s
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, uart_rx (uart_rx.v)]", 4, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, uart_rx (uart_rx.v)]", 4, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, uart_rx (uart_rx.v)]", 4, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+// Elapsed time: 12 seconds
+selectCodeEditor("uart_rx.v", 188, 218); // ac (uart_rx.v)
+typeControlKey((HResource) null, "uart_rx.v", 'v'); // ac (uart_rx.v)
+selectCodeEditor("uart_rx.v", 279, 278); // ac (uart_rx.v)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 06m:32s
+// HMemoryUtils.trashcanNow. Engine heap size: 2,066 MB. GUI used memory: 83 MB. Current time: 11/24/26, 12:55:23 PM EST
+// Elapsed Time for: 'L.f': 06m:36s
+// Elapsed time: 12 seconds
+selectCodeEditor("uart_rx.v", 108, 43); // ac (uart_rx.v)
+selectCodeEditor("uart_rx.v", 310, 114); // ac (uart_rx.v)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 06m:48s
+// Elapsed Time for: 'L.f': 06m:52s
+// Elapsed time: 12 seconds
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, scene_loader.v]", 2, false); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE)
+selectTree(PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE, "[root, Design Sources, Non-module Files, scene_loader.v]", 2, false, false, false, false, false, true); // E (PAResourceEtoH.FileSetPanel_FILE_SET_PANEL_TREE) - Double Click
+selectCodeEditor("scene_loader.v", 193, 148); // ac (scene_loader.v)
+typeControlKey((HResource) null, "scene_loader.v", 'v'); // ac (scene_loader.v)
+selectCodeEditor("scene_loader.v", 153, 37); // ac (scene_loader.v)
+selectCodeEditor("scene_loader.v", 100, 182); // ac (scene_loader.v)
+// Elapsed time: 13 seconds
+selectCodeEditor("scene_loader.v", 58, 170); // ac (scene_loader.v)
+selectCodeEditor("scene_loader.v", 58, 170); // ac (scene_loader.v)
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// Elapsed Time for: 'L.f': 07m:32s
+// Elapsed Time for: 'L.f': 07m:36s
+// Elapsed time: 737 seconds
+selectCodeEditor("scene_loader.v", 749, 147); // ac (scene_loader.v)
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // am (PAResourceItoN.MainMenuMgr_PROJECT, Project)
+selectMenu(PAResourceItoN.MainMenuMgr_CHECKPOINT, "Checkpoint"); // am (PAResourceItoN.MainMenuMgr_CHECKPOINT, Checkpoint)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // am (PAResourceItoN.MainMenuMgr_IP, IP)
+selectMenu(PAResourceItoN.MainMenuMgr_TEXT_EDITOR, "Text Editor"); // am (PAResourceItoN.MainMenuMgr_TEXT_EDITOR, Text Editor)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // am (PAResourceItoN.MainMenuMgr_IP, IP)
+selectMenu(PAResourceItoN.MainMenuMgr_TEXT_EDITOR, "Text Editor"); // am (PAResourceItoN.MainMenuMgr_TEXT_EDITOR, Text Editor)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // am (PAResourceItoN.MainMenuMgr_IP, IP)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+selectCodeEditor("scene_loader.v", 286, 105); // ac (scene_loader.v)
+selectMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // am (PAResourceItoN.MainMenuMgr_PROJECT, Project)
+selectMenu(PAResourceItoN.MainMenuMgr_CHECKPOINT, "Checkpoint"); // am (PAResourceItoN.MainMenuMgr_CHECKPOINT, Checkpoint)
+selectMenu(PAResourceItoN.MainMenuMgr_IP, "IP"); // am (PAResourceItoN.MainMenuMgr_IP, IP)
+selectMenu(PAResourceItoN.MainMenuMgr_CHECKPOINT, "Checkpoint"); // am (PAResourceItoN.MainMenuMgr_CHECKPOINT, Checkpoint)
+selectMenu(PAResourceItoN.MainMenuMgr_PROJECT, "Project"); // am (PAResourceItoN.MainMenuMgr_PROJECT, Project)
+selectMenu(PAResourceItoN.MainMenuMgr_OPEN_RECENT_PROJECT, "Open Recent"); // am (PAResourceItoN.MainMenuMgr_OPEN_RECENT_PROJECT, Open Recent)
+selectMenuItem(PAResourceCommand.PACommandNames_SAVE_PROJECT_AS, "Save As..."); // ap (PAResourceCommand.PACommandNames_SAVE_PROJECT_AS, save_project_as_menu)
+dismissMenu(PAResourceItoN.MainMenuMgr_FILE, "File"); // ah (PAResourceItoN.MainMenuMgr_FILE, File)
+// Run Command: PAResourceCommand.PACommandNames_SAVE_PROJECT_AS
+// Elapsed time: 22 seconds
+setText(PAResourceOtoP.ProjectNameChooser_PROJECT_NAME, "FPGA"); // R (PAResourceOtoP.ProjectNameChooser_PROJECT_NAME)
+// Elapsed time: 18 seconds
+selectButton(RDIResource.BaseDialog_OK, "OK", "Save Project As"); // a (RDIResource.BaseDialog_OK)
+// 'm' command handler elapsed time: 40 seconds
+dismissDialog("Save Project As"); // am (dialog13)
+// TclEventType: PROJECT_RENAME
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: DG_GRAPH_STALE
+// TclEventType: FILE_SET_CHANGE
+// TclEventType: PROJECT_RENAME
+// Tcl Message: save_project_as FPGA /usr4/ec580/gundogan/Desktop/Crayon/FPGA -force 
+// [Engine Memory]: 2,122 MB (+14957kb) [00:30:17]
+dismissDialog("Save Constraints"); // bj (Save Constraints Progress)
+// Elapsed Time for: 'L.f': 20m:54s
+// HMemoryUtils.trashcanNow. Engine heap size: 2,095 MB. GUI used memory: 84 MB. Current time: 11/24/26, 1:09:48 PM EST
+// Elapsed Time for: 'L.f': 20m:58s
