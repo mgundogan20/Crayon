@@ -23,7 +23,7 @@ public class FakePGA : MonoBehaviour
 
     // Lists to hold objects and primitives
     public List<RTObject> loadedMeshes = new List<RTObject>();
-    public List<Triangle> all_tri = new List<Triangle>();
+    public Triangle[] all_tri = new Triangle[0];
 
     // Primary ray settings
     public float fov;
@@ -61,10 +61,12 @@ public class FakePGA : MonoBehaviour
         }
         fov = rtCam.GetComponent<Camera>().fieldOfView;
 
-        // Populate triangle list
+        // Populate triangle array (BVH leaf ids index into it)
+        List<Triangle> tris = new List<Triangle>();
         foreach(RTObject obj in loadedMeshes){
-            all_tri.AddRange(obj.mesh.triangles);
+            tris.AddRange(obj.mesh.triangles);
         }
+        all_tri = tris.ToArray();
     }
 
     // Update is called once per frame: trace a frame as soon as the BVH is ready
@@ -111,18 +113,8 @@ public class FakePGA : MonoBehaviour
                 first_hit.position = new Vector3(0,0,0);
                 first_hit.distance = 1e10f;
 
-                List<BVH.Node> hitLeaves = bvh.GetIntersectedLeaves(ray);
-
-                foreach(BVH.Node leaf in hitLeaves){
-                    Triangle t = all_tri[leaf.id];
-                    Hit hit = CheckIntersection(t, ray);
-                    if(hit.distance > EPSILON){
-                        if(hit.distance < first_hit.distance){
-                            first_hit = hit;
-                            first_hit.material_id = t.material_id;
-                        }
-                    }
-                }
+                // Traversal tests triangles at the leaves and culls boxes beyond the closest hit
+                bvh.ClosestHit(ray, all_tri, ref first_hit);
 
                 // Update color
                 ray.accum_col += Vector3.Scale(ray.ray_col, RTObject.materials[first_hit.material_id].emissionColor);
@@ -140,52 +132,52 @@ public class FakePGA : MonoBehaviour
         lastBounceMs = (float)stopwatch.Elapsed.TotalMilliseconds;
     }
 
-    Hit CheckIntersection(Triangle t, RTRay ray)
+    // Möller–Trumbore, test only: returns true with distance t and barycentrics u, v when the
+    // ray hits the triangle. Normals and position are left to MakeHit, which runs once per ray
+    // for the closest hit instead of for every candidate. Called by BVH.ClosestHit at the leaves.
+    public static bool IntersectTriangle(in Triangle tri, Vector3 origin, Vector3 direction,
+                                         out float t, out float u, out float v)
     {
-        Vector3 V0 = t.V0, E1 = t.E1, E2 = t.E2;
-        Hit hit;
-        hit.distance = -1;
-        hit.position = new Vector3(0,0,0);
-        hit.surface_normal = new Vector3(0,0,0);
-        hit.shading_normal = new Vector3(0,0,0);
-        hit.material_id = 0;
-        
         const float EPSILON = 1e-7f;
+        t = -1f; u = 0f; v = 0f;
 
         // Begin calculating determinant; also used for u
-        Vector3 P = Vector3.Cross(ray.direction, E2);
-        float det = Vector3.Dot(E1, P);
+        Vector3 P = Vector3.Cross(direction, tri.E2);
+        float det = Vector3.Dot(tri.E1, P);
 
         // Ray is parallel to the triangle plane
-        if ((det==0) || (det > -EPSILON && det < EPSILON)){
-            return hit;
-        }
+        if (det > -EPSILON && det < EPSILON) return false;
 
         float invDet = 1.0f / det;
 
         // Distance from V0 to ray origin
-        Vector3 T = ray.origin - V0;
+        Vector3 T = origin - tri.V0;
 
         // First barycentric coordinate
-        float u = Vector3.Dot(T, P) * invDet;
-        if (u < 0.0f || u > 1.0f){
-            return hit;
-        }
+        u = Vector3.Dot(T, P) * invDet;
+        if (u < 0.0f || u > 1.0f) return false;
 
         // Second barycentric coordinate
-        Vector3 Q = Vector3.Cross(T, E1);
-        float v = Vector3.Dot(ray.direction, Q) * invDet;
-        if (v < 0.0f || u + v > 1.0f){
-            return hit;
-        }
+        Vector3 Q = Vector3.Cross(T, tri.E1);
+        v = Vector3.Dot(direction, Q) * invDet;
+        if (v < 0.0f || u + v > 1.0f) return false;
 
         // Distance along the ray to the hit point
-        hit.distance = Vector3.Dot(E2, Q) * invDet;
-        hit.position = ray.origin + hit.distance*ray.direction;
-        hit.surface_normal = Vector3.Cross(E1, E2);
+        t = Vector3.Dot(tri.E2, Q) * invDet;
+        return true;
+    }
+
+    // Builds the full Hit for the closest triangle from its t, u, v
+    public static Hit MakeHit(in Triangle tri, in RTRay ray, float t, float u, float v)
+    {
+        Hit hit;
+        hit.distance = t;
+        hit.position = ray.origin + t * ray.direction;
+        hit.surface_normal = Vector3.Cross(tri.E1, tri.E2);
         hit.surface_normal /= hit.surface_normal.magnitude;
         // Smooth shading: interpolate the vertex normals with the barycentrics
-        hit.shading_normal = ((1f - u - v) * t.N0 + u * t.N1 + v * t.N2).normalized;
+        hit.shading_normal = ((1f - u - v) * tri.N0 + u * tri.N1 + v * tri.N2).normalized;
+        hit.material_id = tri.material_id;
         return hit;
     }
 
@@ -284,8 +276,7 @@ public class FakePGA : MonoBehaviour
     }
 
     // UnityEngine.Random only works on the main thread, so each thread gets its own System.Random
-    [System.ThreadStatic] static System.Random threadRng;
-    static int rngSeed = System.Environment.TickCount;
+    [System.ThreadStatic] static System.Random threadRng;    static int rngSeed = System.Environment.TickCount;
 
     static float RandomRange(float min, float max)
     {
