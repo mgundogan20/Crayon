@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Wed Nov 25 12:40:11 2026
+# Process ID: 3650440
+# Current directory: /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.runs/synth_1
+# Command line: vivado -log top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top.tcl
+# Log file: /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.runs/synth_1/top.vds
+# Journal file: /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.runs/synth_1/vivado.jou
+# Running On        :scc-wm4
+# Platform          :AlmaLinux
+# Operating System  :AlmaLinux release 8.10 (Cerulean Leopard)
+# Processor Detail  :Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz
+# CPU Frequency     :3300.000 MHz
+# CPU Physical cores:28
+# CPU Logical cores :28
+# Host memory       :269825 MB
+# Swap memory       :8589 MB
+# Total Virtual     :278415 MB
+# Available Virtual :249229 MB
+#-----------------------------------------------------------
+source top.tcl -notrace

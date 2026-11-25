@@ -1,0 +1,48 @@
+#-----------------------------------------------------------
+# Vivado v2024.1 (64-bit)
+# SW Build 5076996 on Wed May 22 18:36:09 MDT 2024
+# IP Build 5075265 on Wed May 22 21:45:21 MDT 2024
+# SharedData Build 5076995 on Wed May 22 18:29:18 MDT 2024
+# Start of session at: Tue Nov 24 12:39:14 2026
+# Process ID: 467704
+# Current directory: /usr4/ec580/gundogan/Desktop/Crayon
+# Command line: vivado
+# Log file: /usr4/ec580/gundogan/Desktop/Crayon/vivado.log
+# Journal file: /usr4/ec580/gundogan/Desktop/Crayon/vivado.jou
+# Running On        :scc-yf1
+# Platform          :AlmaLinux
+# Operating System  :AlmaLinux release 8.10 (Cerulean Leopard)
+# Processor Detail  :Intel(R) Xeon(R) Gold 6132 CPU @ 2.60GHz
+# CPU Frequency     :2938.912 MHz
+# CPU Physical cores:28
+# CPU Logical cores :28
+# Host memory       :200832 MB
+# Swap memory       :8589 MB
+# Total Virtual     :209422 MB
+# Available Virtual :158380 MB
+#-----------------------------------------------------------
+start_gui
+create_project Crayon_FPGA /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA -part xc7a100tcsg324-1
+file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1
+file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new
+close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new/constraints_nexys.xdc w ]
+add_files -fileset constrs_1 /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/constrs_1/new/constraints_nexys.xdc
+file mkdir /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new
+close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_rx.v w ]
+add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_rx.v
+close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_tx.v w ]
+add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/uart_tx.v
+close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/scene_loader.v w ]
+add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/scene_loader.v
+close [ open /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/top.v w ]
+add_files /usr4/ec580/gundogan/Desktop/CRAYON/Crayon_FPGA/Crayon_FPGA.srcs/sources_1/new/top.v
+update_compile_order -fileset sources_1
+update_compile_order -fileset sources_1
+save_project_as FPGA /usr4/ec580/gundogan/Desktop/Crayon/FPGA -force
+close [ open /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/tri_mem.v w ]
+add_files /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/tri_mem.v
+close [ open /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/mat_mem.v w ]
+add_files /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/mat_mem.v
+close [ open /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/bvh_mem.v w ]
+add_files /usr4/ec580/gundogan/Desktop/Crayon/FPGA/FPGA.srcs/sources_1/new/bvh_mem.v
+update_compile_order -fileset sources_1
