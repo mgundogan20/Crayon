@@ -11,5 +11,13 @@ module scene_loader #(
     output reg [7:0]  rx_data
 );
 
+    localparam IDLE  = 3'd0;
+    localparam START = 3'd1;
+    localparam COUNT  = 3'd2;
+    localparam BVH  = 3'd3;
+    localparam TRI  = 3'd4;
+    localparam MAT  = 3'd5;
+    localparam FETCH_BVH  = 3'd6; //temp state for debugging
+    localparam FETCH_TRI  = 3'd7; //temp state for debugging
 
 endmodule

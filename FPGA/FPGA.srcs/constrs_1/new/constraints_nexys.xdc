@@ -19,7 +19,7 @@ set_property -dict { PACKAGE_PIN D4  IOSTANDARD LVCMOS33 } [get_ports { uart_tx 
 
 ## Status LEDs
 ## 0 triangles loaded | 1 rays loaded | 2 busy | 3 frame done | 4 packet error | 5 overrun | 7:6 bounce
-set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 } [get_ports { led[0] }]
+set_property -dict { PACKAGE_PIN H17 IOSTANDARD LVCMOS33 } [get_ports { load_done }]
 set_property -dict { PACKAGE_PIN K15 IOSTANDARD LVCMOS33 } [get_ports { led[1] }]
 set_property -dict { PACKAGE_PIN J13 IOSTANDARD LVCMOS33 } [get_ports { led[2] }]
 set_property -dict { PACKAGE_PIN N14 IOSTANDARD LVCMOS33 } [get_ports { led[3] }]
