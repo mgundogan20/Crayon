@@ -24,6 +24,8 @@ public class FakePGA : MonoBehaviour
     // Lists to hold objects and primitives
     public List<RTObject> loadedMeshes = new List<RTObject>();
     public Triangle[] all_tri = new Triangle[0];
+    public int[] light_triangles = new int[0];
+    public bool shadowRaysOn = true;
 
     // Primary ray settings
     public float fov;
@@ -67,6 +69,14 @@ public class FakePGA : MonoBehaviour
             tris.AddRange(obj.mesh.triangles);
         }
         all_tri = tris.ToArray();
+
+        // Light sources = emissive triangles
+        List<int> lights = new List<int>();
+        for (int triangleIndex = 0; triangleIndex < all_tri.Length; triangleIndex++){
+            int materialId = all_tri[triangleIndex].material_id;
+            if (materialId != 0 && RTObject.materials[materialId].emissionColor != Vector3.zero) lights.Add(triangleIndex);
+        }
+        light_triangles = lights.ToArray();
     }
 
     // Update is called once per frame: trace a frame as soon as the BVH is ready
@@ -123,6 +133,35 @@ public class FakePGA : MonoBehaviour
                 // Update ray
                 if (first_hit.distance < 1e9f){
                     ray.origin = first_hit.position + (first_hit.surface_normal*1e-4f);
+
+                    // Shadow ray to a random light
+                    if (shadowRaysOn){
+                        ref readonly Triangle light = ref all_tri[light_triangles[RandomIndex(light_triangles.Length)]];
+                        Vector3 toLight = light.V0 + (light.E1 + light.E2) / 3f - ray.origin; // centroid
+
+                        float lightDistance = toLight.magnitude;
+                        Vector3 lightDirection = toLight / lightDistance;
+                        float cosineToLight = Vector3.Dot(first_hit.shading_normal, lightDirection);
+                        if (cosineToLight > 0f){
+                            RTRay shadow;
+                            shadow.origin = ray.origin;
+                            shadow.direction = lightDirection;
+                            shadow.ray_col = Vector3.zero;
+                            shadow.accum_col = Vector3.zero;
+
+                            Hit blocker;
+                            blocker.surface_normal = Vector3.zero;
+                            blocker.shading_normal = Vector3.zero;
+                            blocker.material_id = light.material_id; // stays the light if nothing is hit
+                            blocker.position = Vector3.zero;
+                            blocker.distance = lightDistance * 1.001f; // slack so the light's own triangle is found
+                            bvh.ClosestHit(shadow, all_tri, ref blocker);
+
+                            // Lit unless the first thing on the way is a non-emissive surface
+                            if (RTObject.materials[blocker.material_id].emissionColor != Vector3.zero)
+                                ray.accum_col += Vector3.Scale(ray.ray_col, RTObject.materials[light.material_id].emissionColor) * cosineToLight;
+                        }
+                    }
                     ray.direction -= first_hit.shading_normal * 2 * Vector3.Dot(ray.direction, first_hit.shading_normal);
                     ray.direction = PerturbDirection(ray.direction, (Mathf.PI/256f) * (0xFF - RTObject.materials[first_hit.material_id].smoothness));
                 }
@@ -283,6 +322,13 @@ public class FakePGA : MonoBehaviour
         if (threadRng == null)
             threadRng = new System.Random(System.Threading.Interlocked.Increment(ref rngSeed));
         return min + (float)threadRng.NextDouble() * (max - min);
+    }
+
+    static int RandomIndex(int count)
+    {
+        if (threadRng == null)
+            threadRng = new System.Random(System.Threading.Interlocked.Increment(ref rngSeed));
+        return threadRng.Next(count);
     }
 
     public static Vector3 PerturbDirection(Vector3 initial, float maxAngleRad)
