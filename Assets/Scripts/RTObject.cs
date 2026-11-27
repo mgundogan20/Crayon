@@ -61,6 +61,9 @@ public class RTObject : MonoBehaviour
     // Awake runs before any Start, so geometry is ready when other scripts query it in their Start
     void Awake()
     {
+        // Before Convert_mesh, which stamps materialIndex into every triangle
+        ResolveMaterialIndex();
+
         source.meshFilter = GetComponent<MeshFilter>();
         obj_transform = GetComponent<Transform>();
 
@@ -78,6 +81,33 @@ public class RTObject : MonoBehaviour
 
         mesh = Convert_mesh(source);
         bounding_box = GeometryUtility.CalculateBounds(source.vertices, Matrix4x4.identity);
+    }
+
+    // Keep the Inspector value in sync while editing
+    void OnValidate()
+    {
+        ResolveMaterialIndex();
+    }
+
+    // materialIndex = position of this object's renderer material in MaterialBox.unityMaterials.
+    // Reads the serialized array directly, so it doesn't depend on MaterialBox.Awake having run.
+    // Falls back to the existing Inspector value if the material isn't in the box.
+    void ResolveMaterialIndex()
+    {
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
+        if (meshRenderer == null) return;
+        // sharedMaterial, not material: .material would create an instance that never matches the box
+        Material mat = meshRenderer.sharedMaterial;
+        if (mat == null) return;
+
+        MaterialBox box = FindAnyObjectByType<MaterialBox>();
+        if (box == null || box.unityMaterials == null) return;
+
+        int idx = System.Array.IndexOf(box.unityMaterials, mat);
+        if (idx >= 0)
+            materialIndex = idx;
+        else
+            Debug.LogWarning($"RTObject '{name}': material '{mat.name}' is not in MaterialBox; keeping materialIndex {materialIndex}", this);
     }
 
     void Start()
