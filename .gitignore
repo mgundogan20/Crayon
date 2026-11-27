@@ -122,3 +122,12 @@ Assets/Tree_Textures/*
 .claude/settings.local.json
 FPGA/FPGA.runs/
 FPGA/FPGA.sim/
+# Vivado generated
+FPGA/FPGA.cache/
+FPGA/FPGA.ip_user_files/
+FPGA/FPGA.hw/
+FPGA/FPGA.srcs/utils_1/imports/
+.Xil/
+vivado*.jou
+vivado*.str
+__pycache__/
